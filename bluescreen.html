@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>系统崩溃</title>
+    <style>
+        body {
+            background-color: #0078D7;
+            color: white;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 10vh 10vw;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+            user-select: none;
+            touch-action: none; 
+        }
+        .sad-face {
+            font-size: 8rem;
+            margin-bottom: 20px;
+            font-weight: 300;
+            line-height: 1;
+        }
+        .message {
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            font-weight: 300;
+            line-height: 1.3;
+        }
+        .progress {
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+        .details {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .qr-code {
+            width: 110px;
+            height: 110px;
+            background: white;
+            background-image: repeating-linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), repeating-linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000);
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+        }
+        .info {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        @media (max-width: 600px) {
+            .sad-face { font-size: 6rem; }
+            .message { font-size: 1.2rem; margin-bottom: 20px; }
+            .progress { font-size: 1.2rem; margin-bottom: 20px; }
+            .details { flex-direction: column; gap: 10px; }
+            .qr-code { width: 80px; height: 80px; }
+            .info { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sad-face">:(</div>
+    <div class="message">你的电脑遇到问题，需要重新启动。<br>我们只收集某些错误信息，然后为你重新启动。</div>
+    <div class="progress"><span id="percentage">0</span>% 完成</div>
+    <div class="details">
+        <div class="qr-code"></div>
+        <div class="info">
+            有关此问题的详细信息和可能的解决方法，请访问<br>
+            https://www.windows.com/stopcode<br><br>
+            如果致电支持人员，请向他们提供以下信息:<br>
+            终止代码: CRITICAL_PROCESS_DIED
+        </div>
+    </div>
+
+    <script>
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+
+        let progress = parseInt(localStorage.getItem('win10_bsod_progress')) || 0;
+        const percentageEl = document.getElementById('percentage');
+        percentageEl.innerText = progress;
+
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 15) + 5; 
+            if (progress >= 100) progress = 100;
+            
+            percentageEl.innerText = progress;
+            localStorage.setItem('win10_bsod_progress', progress);
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                
+                localStorage.setItem('win10_zhoumu2', 'true');
+                localStorage.removeItem('win10_bsod_progress');
+                
+                localStorage.removeItem('win10_windows');
+                
+                setTimeout(() => {
+                    window.location.replace('index.html');
+                }, 1000);
+            }
+        }, 450);
+    </script>
+</body>
+</html>
