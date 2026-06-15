@@ -25,15 +25,7 @@
         }
     </style>
     
-    <script>
-        var isSkip = localStorage.getItem('win10_zhoumu2') === 'true' || 
-                     localStorage.getItem('win10_zhoumu3') === 'true' || 
-                     localStorage.getItem('win10_first_boot_done') === 'true';
-                     
-        if (!isSkip) {
-            document.write('<style id="first-boot-style">#lockscreen, .login-screen { display: none !important; } #win10-oobe-screen { display: flex !important; }</style>');
-        }
-    </script>
+    <script src="js/lock/boot-check.js"></script>
 </head>
 <body>
 
@@ -64,7 +56,7 @@
                 </div>
                 <div>
                     <div style="font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 17px;">获取沉浸式体验</div>
-                    <div style="color: #cce4f7; line-height: 1.6;">本系统包含解谜、微恐怖与剧情元素。强烈建议佩戴耳机，并在光线适宜的环境下游玩，以获得最佳体验。</div>
+                    <div style="color: #cce4f7; line-height: 1.6;">本系统包含解谜、微恐与短剧情元素。强烈建议佩戴耳机，并在光线适宜的环境下游玩，以获得最佳体验。</div>
                 </div>
             </div>
             <div style="display: flex; align-items: flex-start; gap: 20px;">
@@ -96,12 +88,12 @@
 
             <div style="margin-bottom: 16px;">
                 <strong style="color: #fff;">01. 虚构性总纲</strong><br>
-                本作所有内容、剧情、人物、组织、事件、对话、线索、密码、暗语、隐藏信息、彩蛋及其延伸含义，均属虚构。如您在现实中发现与本作高度相似的情节，请首先检查您是否正处于游戏之中，其次检查您本人是否为本作的隐藏登场角色。
+                本作所有内容、剧情、人物、组织、事件、对话、线索、密码、暗语、隐藏信息、彩蛋及其延伸含义，均属虚构。
             </div>
 
             <div style="margin-bottom: 16px;">
                 <strong style="color: #fff;">02. 视觉与媒体资产</strong><br>
-                游戏内使用的图片、视频、音频、字体、界面截图及视觉元素，部分来源于网络公开资源，部分由 AI 辅助生成，部分由创作者自行制作。所有资产均以非商业、致敬、叙事需要为目的使用。若原始权利人发现本作对其作品存在误用，欢迎联系作者，而非通过量子纠缠或精神感应传递律师函。
+                游戏内使用的图片、视频、音频、字体、界面截图及视觉元素，部分来源于网络公开资源，部分由 AI 辅助生成，部分由创作者自行制作。所有资产均以非商业、致敬、叙事需要为目的使用。若原始权利人发现本作对其作品存在误用，欢迎联系作者，而非直接传递律师函。
                 <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 5px;">
                     <span style="background: rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 4px; font-size: 11px;">图片素材</span>
                     <span style="background: rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 4px; font-size: 11px;">AI 生成内容</span>
@@ -129,7 +121,7 @@
 
             <div style="margin-bottom: 16px;">
                 <strong style="color: #fff;">04. 真实人物</strong><br>
-                本作中如出现与真实存在或曾经存在的人物（包括政治人物、科学家、艺术家、网络名人、历史人物、您的邻居、您本人）相似的角色名称、外貌、行为模式或口头禅，纯属戏剧性巧合。本作对任何真实人物均无恶意刻画、名誉侵害或人身攻击之意。若您认为本作中某角色与您极为相似，这或许是您潜意识里的投射，建议您继续游玩并深入探索。
+                本作中如出现与真实存在或曾经存在的人物（包括政治人物、科学家、艺术家、网络名人、历史人物、您的邻居、您本人）相似的角色名称、外貌、行为模式或口头禅，纯属戏剧性巧合。本作对任何真实人物均无恶意刻画、名誉侵害或人身攻击之意。
             </div>
 
             <div style="margin-bottom: 16px;">
@@ -181,12 +173,11 @@
 
             <div style="margin-bottom: 16px;">
                 <strong style="color: #fff;">10. AI、代码与数字基础设施</strong><br>
-                本作部分内容由人工智能辅助创作。游戏中出现的任何代码片段、脚本、命令行指令、可执行文件路径，仅为叙事道具，不构成实际可运行程序或可复现的攻击向量。作者不对任何试图执行上述代码的玩家负责。若某段代码恰好在您的设备上可以运行，这是奇迹，不是设计。
-            </div>
+                本作部分内容由人工智能辅助创作。游戏中出现的任何代码片段、脚本、命令行指令、可执行文件路径，仅为叙事道具，不构成实际可运行程序或可复现的攻击向量。作者不对任何试图执行上述代码的玩家负责。
 
             <div style="margin-bottom: 16px;">
                 <strong style="color: #fff;">11. 未来事件与预言</strong><br>
-                本作剧情中出现的任何涉及未来的内容，包括技术预测、社会走向、政治格局变化、天文事件、物种演化等，均为创作者的叙事想象，不具有预言性质。如本作剧情不幸与现实未来高度吻合，作者保留表示震惊的权利，同时放弃任何先知声索。
+                本作剧情中出现的任何涉及未来的内容，包括技术预测、社会走向、政治格局变化、天文事件、物种演化等，均为创作者的叙事想象，不具有预言性质。
             </div>
 
             <div style="margin-bottom: 16px;">
@@ -196,7 +187,7 @@
 
             <div style="margin-bottom: 4px;">
                 <strong style="color: #fff;">13. 意识、心理与认知安全</strong><br>
-                本作设计具有沉浸感，但现实与游戏之间存在边界。游戏中的任何谜题、线索或隐藏信息不应被理解为对玩家本人生活的真实指令。若您开始在日常生活中看到隐藏线索，请先确认这是否为游戏外延内容的一部分；若不是，建议暂停游玩并与信任的人交流。作者关心每一位玩家的心理健康。
+                本作设计具有沉浸感，但现实与游戏之间存在边界。游戏中的任何谜题、线索或隐藏信息不应被理解为对玩家本人生活的真实指令。若您开始在日常生活中看到隐藏线索，建议暂停游玩并与信任的人交流。作者关心每一位玩家的心理健康。
             </div>
             
         </div>
@@ -261,18 +252,9 @@
         </div>
     </div>
 
-    <script>
-        const userNameEl = document.getElementById('user-name');
-        
-        if (localStorage.getItem('win10_zhoumu3') === 'true') {
-            document.body.classList.add('zhoumu3');
-            if (userNameEl) {
-                userNameEl.innerText = '若宁';
-            }
-        } else if (localStorage.getItem('win10_zhoumu2') === 'true') {
-            document.body.classList.add('zhoumu2');
-        }
-    </script>
-    <script src="lock.js"></script>
+    <script src="js/lock/theme.js"></script>
+    <script src="js/lock/assets.js"></script>
+    <script src="js/lock/oobe.js"></script>
+    <script src="js/lock/login.js"></script>
 </body>
 </html>
