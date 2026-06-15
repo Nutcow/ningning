@@ -47,8 +47,4 @@ window.LOCK_ASSETS_TO_LOAD = [
     'image/mianmian.png', 'image/mianmian2.png', 'image/emoji11.jpg', 'image/睡觉.png',
     'image/xw6.png', 'image/xw7.png', 'image/xw8.png',
     'hands/s0.png', 'hands/s1.png', 'hands/s2.png',
-
-    'audio/message.wav', 'audio/windowsError.mp3', 'audio/windows-10-bsod-sound.mp3',
-    'audio/morse.wav', 'audio/wechat_ring.mp3', 'audio/windows-10-foreground-earrape.mp3',
-    'audio/windows10_sound.wav'
 ];
