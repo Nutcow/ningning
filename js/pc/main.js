@@ -1002,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function loadSystemData() {
         if (isZhoumu3) { const vp = document.getElementById('icon-videoplayer'); if (vp) vp.style.display = 'flex'; }
-        if (isZhoumu2 && localStorage.getItem('win10_creepy_spawned') === 'true') {
+        if (isZhoumu2 && !isZhoumu3 && localStorage.getItem('win10_creepy_spawned') === 'true') {
             if (localStorage.getItem('win10_creepy_puzzle_solved') === 'true') {
                 createCreepyPicElement('merged_pic');
             } else {
@@ -1020,7 +1020,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        if (isZhoumu2 && localStorage.getItem('win10_creepy_spawned') === 'true') {
+        if (isZhoumu2 && !isZhoumu3 && localStorage.getItem('win10_creepy_spawned') === 'true') {
             for (let i = 1; i <= 9; i++) {
                 const inBin = vfs.bin.find(item => item.isApp && item.id === `cpic${i}`);
                 if (inBin) {
@@ -1433,7 +1433,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function checkPassword() {
         if (currentUnlockTarget === 'secret') {
-            if (pwdInput.value === '052013') {
+            if (pwdInput.value === '052012') {
                 pwdError.style.display = 'block';
                 pwdInput.focus();
                 if (!isZhoumu2 && !isZhoumu3 && localStorage.getItem('win10_event_anmo_fake_pwd') !== 'true') {
@@ -1447,7 +1447,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         { text: '她在你那边吗？', delay: 2000, isMine: false },
                         { text: '她昨天就回家了', delay: 3000, isMine: true },
                         { text: '...', delay: 1000, isMine: true },
-                        { text: '我打视频看看', delay: 2000, isMine: true },
+                        { text: '我打她视频看看', delay: 2000, isMine: true },
                         { text: '好！', delay: 1000, isMine: false },
                         { text: '到时候她告诉你什么', delay: 3000, isMine: false },
                         { text: '要和我讲哦', delay: 2000, isMine: false },
@@ -2474,9 +2474,22 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                             
                             const toast = document.getElementById('win-toast');
-                            document.getElementById('toast-body').innerText = msg.type === 'img' ? '[图片]' : msg.text;
 
                             if (toast) {
+                                const toastImgs = toast.querySelectorAll('img');
+                                if(toastImgs.length > 1) toastImgs[1].src = 'image/yueyue.jpg';
+                                const nameDiv = toast.querySelector('div[style*="font-weight: bold"]');
+                                if(nameDiv) nameDiv.innerText = '月月';
+                                
+                                document.getElementById('toast-body').innerText = msg.type === 'img' ? '[图片]' : msg.text;
+
+                                toast.onclick = () => {
+                                    openApp('wechat');
+                                    toast.style.right = '-350px';
+                                    activeWeChatContact = 'yueyue';
+                                    renderWeChat();
+                                };
+
                                 toast.style.right = '20px';
                                 clearTimeout(toastTimeout);
                                 toastTimeout = setTimeout(() => {
