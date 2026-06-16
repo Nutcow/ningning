@@ -40,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updatePreloadProgress(key) {
-        // 每个资源只计一次，避免重复触发（canplaythrough 等事件可能多次触发）
         if (countedAssets.has(key)) return;
         countedAssets.add(key);
 
@@ -68,8 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (src.endsWith('.wav') || src.endsWith('.mp3')) {
             const audio = new Audio();
             audio.preload = 'auto';
-            // 监听多个事件：远程服务器(如 GitHub Pages)上 canplaythrough 经常不触发，
-            // 额外监听 canplay / loadeddata / error，确保资源一定会被计数
             audio.oncanplaythrough = done;
             audio.oncanplay = done;
             audio.onloadeddata = done;
@@ -83,12 +80,9 @@ document.addEventListener("DOMContentLoaded", () => {
             img.src = src;
         }
 
-        // 单个资源最多等待 8 秒。避免个别资源(尤其是音频在远程服务器上不触发
-        // canplaythrough)导致进度永远停在 99%、"接受"按钮无法点击、卡住进不去游戏。
         setTimeout(done, 8000);
     });
 
-    // 兜底保险：无论发生什么，最多 12 秒后必定解锁"接受"按钮
     setTimeout(finishPreload, 12000);
 
     if (acceptBtn) {

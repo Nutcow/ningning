@@ -146,8 +146,8 @@ function showEndingScreen(type = 1) {
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); opacity: 0;
         transition: opacity 3s ease-in-out; user-select: none; white-space: nowrap;
     `;
-    titleEl.textContent = type == 3 ? '结局 3 ：我没有忘'
-        : (type == 1 ? '结局 2 ：你和我' : '结局 1：无事发生');
+    titleEl.textContent = type == 3 ? 'True Ending ：我没有忘'
+        : (type == 1 ? 'Bad Ending ：你和我' : 'Good Ending ：无事发生');
 
     const scrollWrap = document.createElement('div');
     scrollWrap.style.cssText = `position: absolute; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center;`;
@@ -186,7 +186,7 @@ function showEndingScreen(type = 1) {
         customImg1.src = 'image/小时候.png';
         customImg2.style.display = 'none';
     } else if (type == 3) {
-        customImg1.src = 'image/全家图.png';
+        customImg1.src = 'image/荡秋千.png';
         customImg2.style.display = 'none';
     }
 
@@ -273,58 +273,21 @@ function scrollMsgUp(msgEl, scrollWrap) {
 function buildEndingMessage(type) {
     if (type == 3) {
         return `
-我没有去开门。
-
-门外的声音学着哥哥的腔调，
+声音又出现了。
+学着哥哥的腔调，
 一遍又一遍，喊我的名字。
-可哥哥从来不敲门。
-他有钥匙。
-
-我抱起床头的棉棉。
-它很软，很旧，眼睛是玻璃做的。
-它只是一只玩偶。
-是它替我，把他们一个一个，记成了空白。
-
-我把脸埋进它怀里，
-轻轻念出那个，它最怕的词——
-不是它的名字。
-是他的。
-
-江明远。
-
-我的哥哥。
-他高高的，会画画，
-把那台旧电脑留给了我，
-说等生日过完，
-就带我去更远的地方看看。
-
-门外，安静了。
-那阵吱吱喳喳，停了。
-家里很空。
-妈妈不在，爸爸不在，
-月月和安沫，也再听不见了。
-只剩我一个。
-
-可这一次，
-是我自己，记得他们的。
-
-兔子能把人，从这个世界上吃掉，
-吃不掉，我心里的。
-
-天，快亮了。
-我没有忘。`;
+可这一次，我并没有开门。
+`;
     }
     if (type == 2) {
         return `
-第二天早上她醒来。
-问我：哥哥今天吃什么。
-我说，昨天的面条还有一点。
-她说，好。
-窗外的风吹进来。
-不冷，也不暖。
-她吃完了。
-问我下午能不能出去玩。
-我说，可以。
+哥哥，今天吃什么呀？我说。
+“昨天的面条还有一点，我再给你煎个蛋吧。”
+“好，谢谢哥哥。”
+窗外的风吹进来，不冷，也不暖。
+我吃完了。
+“我下午可以去找月月玩吗？”我问道。
+“可以。”
 就这样。
 又过了一天。`;
     }

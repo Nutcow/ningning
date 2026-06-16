@@ -783,8 +783,8 @@ document.addEventListener("DOMContentLoaded", () => {
         secret: [ 
             { id: 's0', name: '文字.txt', content: '妈妈周三下午就回来了，比我想的要快很多！妈妈和爸爸给我买了一个小蛋糕！！！超级好吃！！奶油特别绵密，上面摆满了草莓。可惜中间的猕猴桃有点酸，我都挑出来了……我拿到蛋糕后切了一块分享给哥哥，但是感觉他不是那么想吃。他就连自己生日的蛋糕，最后还是我帮忙吃完的……哼，没品的家伙。算了，不和他一般见识。对了，月月明天就要来我家了，我得准备一下房间……', type: 'text' },
             { id: 's1', name: '文字(1).txt', content: '月月周四来我家玩啦！！！我超开心！她爸爸送她来的。哥哥带我们在外面玩了一会儿羽毛球，后来我们一起看了电视，还吃了妈妈之前包的饺子。真好吃！真希望月月能够住在我家一段时间！这样我们就可以一直玩啦！！到了晚餐时间，我妈妈居然同意月月来我家过夜！！！晚上，月月拉着我一起看《兔子先生》，还被妈妈说了……不过我又不是每天都看那么晚嘛！但不管怎么说，起码我能和月月待在一起。', type: 'text' },
-            { id: 's5', name: '文字(3).txt', content: '晚上月月抱着棉棉玩了一会说棉棉的眼睛好神奇好像会跟着人转。其实我早就知道了，我把它放到了客厅。结果第二天早上，它又回到了我的床头……一定是哥哥半夜帮我捡回来的吧。嘻嘻。明天一定要好好谢谢哥哥！', type: 'text' },
             { id: 's1', name: '文字(2).txt', content: '月月一直在我家待到周六才被爸爸妈妈接走。我恳求妈妈让月月再待一会儿，但是被她无情地拒绝了。我好难过……', type: 'text' },
+            { id: 's5', name: '文字(3).txt', content: '晚上月月抱着棉棉玩了一会说棉棉的眼睛好神奇好像会跟着人转。其实我早就知道了，我把它放到了客厅。结果第二天早上，它又回到了我的床头……一定是哥哥半夜帮我捡回来的吧。嘻嘻。明天一定要好好谢谢哥哥！', type: 'text' },
             { id: 's3', name: '兔子玩偶.png', content: 'image/tv.png', type: 'img' },
             { id: 's4', name: 'unknown.exe', content: '', type: 'exe' }
         ],
@@ -2724,32 +2724,27 @@ document.addEventListener("DOMContentLoaded", () => {
                             return;
 
                             } else if (lowerVal === 'help') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4;">兔先生.exe 已接管系统。<br>当前可用指令:<br> - help : 查看系统帮助<br> - clear : 清屏</div>`;
+                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4;">兔先生.exe 已接管系统。<br>当前可用指令:<br> - help : 查看系统帮助<br> - clear : 清屏<br> - wakeup : 清醒<br> - whoami : 我是谁<br></div>`;
                             } else if (lowerVal === 'clear') {
                                 cmdOutput.innerHTML = '';
                             } else if (lowerVal === 'whoami') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">正在确认当前用户……<br>用户：若宁<br>上次登录：2020-06-16 03:17<br>当前在线：2<br>　└ 若宁<br>　└ [用户名已损坏，无法显示]<br>系统无法确定，哪一个，才是正在打字的人。</div>`;
-                            } else if (lowerVal === 'mianmian' || lowerVal === '棉棉') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">棉棉，在这里。<br>哥哥把我送给她，我就把哥哥，收了起来。<br>爸爸、妈妈、月月……一个一个，都收得很好。<br>现在，只剩下若宁一个了。<br>门外那串方括号里的字母，她拼好了吗？<br>拼好了，就让她，念给我听。</div>`;
-                            } else if (lowerVal === 'rabbit' || lowerVal === '兔子' || lowerVal === '兔先生') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">兔子先生。<br>电视里那只，永远在笑的兔子。<br>是哥哥把我，从屏幕里抱回家，放进你被窝的。<br>你搂着我睡了那么多个晚上……早就把我，当成一家人了，对不对？<br>所以，他们走的时候，你一点都不疼。</div>`;
+                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">正在确认当前用户<br>用户：若宁<br>上次登录：2020-06-16 03:17<br>当前在线：2</div>`;
                             } else if (lowerVal === 'wakeup' || lowerVal === '醒醒') {
                                 localStorage.setItem('win10_z3_wakeup_heard', 'true');
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6; color:#9fd0ff;">——检测到一段尚未被覆盖的旧信号——<br>“宁宁，醒醒。”<br>“这里不是家。别信那只兔子。”<br>“门外那个，不是我——我从来不敲门，我有钥匙。”<br>“你还记得我的，对不对？”<br>“……如果你还记得，就把我的名字，打出来。”<br>——信号很弱，可这一次，没有中断——</div>`;
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6; color:#ffd479;">[一条很旧的消息，不知从哪一年漂来]<br>安沫：若宁，别给它开门。不管它用谁的声音。<br>安沫：我们……都还记得你。你也别忘了你自己。</div>`;
+                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">jiangmingyuan</div>`;
                             } else if (lowerVal === 'jiangmingyuan' || lowerVal === '江明远' || lowerVal === '哥哥' || lowerVal === 'gege') {
                                 const heard = localStorage.getItem('win10_z3_wakeup_heard') === 'true';
                                 if (heard) {
                                     cmdInput.disabled = true;
                                     cmdInput.value = '';
                                     setTimeout(() => {
-                                        cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color:#9fd0ff;">江明远。</div>`;
+                                        cmdOutput.innerHTML += `<div style="margin-bottom: 5px; ">江明远。</div>`;
                                         cmdContent.scrollTop = cmdContent.scrollHeight;
                                         setTimeout(() => {
-                                            cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color:#9fd0ff;">我的哥哥。</div>`;
+                                            cmdOutput.innerHTML += `<div style="margin-bottom: 5px; ">我的哥哥。</div>`;
                                             cmdContent.scrollTop = cmdContent.scrollHeight;
                                             setTimeout(() => {
-                                                cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color:#fff;">门外的敲门声……停了。</div>`;
+                                                cmdOutput.innerHTML += `<div style="margin-bottom: 5px;">门外的声音停了。</div>`;
                                                 cmdContent.scrollTop = cmdContent.scrollHeight;
                                                 setTimeout(() => { startEnding3Effect(); }, 2200);
                                             }, 1600);
@@ -2757,7 +2752,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     }, 800);
                                     return;
                                 } else {
-                                    cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">江明远……<br>系统里，这个名字早就查无此人了。<br>你为什么……还记得？<br><span style="color:#888;">（别去想他。门外的，才是来接你的人。）</span></div>`;
+                                    cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">查无此人</div>`;
                                 }
                             } else if (lowerVal === 'imwatchingyou') {
                                 cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; color: #666;">[指令已失效]</div>`;
@@ -2779,7 +2774,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 cmdInput.value = '';
                                 
                                 setTimeout(() => {
-                                    cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color: #fff;">离我们见面只剩下一段距离了...宁宁</div>`;
+                                    cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color: #fff;">宁宁</div>`;
                                     cmdContent.scrollTop = cmdContent.scrollHeight;
                                     
                                     setTimeout(() => {
@@ -2798,11 +2793,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             } else if (lowerVal === 'clear') {
                                 cmdOutput.innerHTML = '';
                             } else if (lowerVal === 'jiangmingyuan' || lowerVal === '江明远') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; color:#fff;">江明远。<br>系统里，这个名字已经查无此人。<br>可你还记得他，对吧？<br>……这就够了。再靠近我一点。</div>`;
-                            } else if (lowerVal === 'remember') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; color:#fff;">记住了吗？<br>你有一个哥哥。他把这台电脑留给了你，然后就不见了。<br>很好……你又靠近了我一步。<br>可你别只顾着记他。<br>那只兔子，你早就亲手给它取过名字了——就在你自己的日记里。<br>翻回去看看，想起那两个字，再打给我。我一直在等。</div>`;
-                            } else if (lowerVal === 'mianmian' || lowerVal === '棉棉') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; color:#fff;">棉棉……<br>你终于叫出了我的名字。<br>从你抱着我睡着的那一晚起，我就一直在你身边。<br>现在，只剩最后一步了——<br><span style="color:#ff5555;">回头看。（lookbehind）</span><br>我，就在你身后。</div>`;
+                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; ">查无此人</div>`;
                             } else if (lowerVal === 'imwatchingyou') {
                                 cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; color: #666;">[指令已失效]</div>`;
                             } else if (lowerVal === '0616') {
@@ -2821,7 +2812,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         } else if (lowerVal === '0616') {
                             cmdInput.disabled = true;
                             cmdInput.value = '';
-                            cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color: #aaa;">指令已确认，系统正在休眠...</div>`;
+                            cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color: #aaa;">指令已确认，系统正在休眠</div>`;
                             setTimeout(() => {
                                 startEnding2Effect();
                             }, 1000);
