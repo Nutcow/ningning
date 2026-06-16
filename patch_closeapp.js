@@ -29,7 +29,6 @@ const newStr = `    function closeApp(appId) {
             window.yueyueSpecialPicOpen = false;
             if (wechatData && wechatData['yueyue'] && wechatData['yueyue'].messages) {
                 const messages = wechatData['yueyue'].messages;
-                // find the last image message if possible, or match by content
                 const targetMsg = messages.find(m => m.content === 'image/全家图2.png' && m.type === 'img');
                 if (targetMsg) {
                     targetMsg.type = 'recall';

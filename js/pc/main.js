@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         'xhs': { icon: 'image/小红书.png', name: '小红书' },
         'hospitalpdf': { icon: 'image/pdf.png', name: '江建国体检报告.pdf' },
         'news': { icon: 'image/新闻.png', name: '每日新闻' },
+        'videoplayer': { icon: 'image/video.png', name: '电影和电视' },
         
         
         'cpic1': { icon: 'pt/1.png', name: '你.png' },
@@ -1000,6 +1001,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function loadSystemData() {
+        if (isZhoumu3) { const vp = document.getElementById('icon-videoplayer'); if (vp) vp.style.display = 'flex'; }
         if (isZhoumu2 && localStorage.getItem('win10_creepy_spawned') === 'true') {
             if (localStorage.getItem('win10_creepy_puzzle_solved') === 'true') {
                 createCreepyPicElement('merged_pic');
@@ -1029,6 +1031,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (isZhoumu3) {
+            const vpIcon = document.getElementById('icon-videoplayer');
+            if (vpIcon) vpIcon.style.display = 'flex';
             for (let i = 1; i <= 9; i++) {
                 const icon = document.getElementById(`icon-cpic${i}`);
                 if (icon) icon.style.display = 'none';

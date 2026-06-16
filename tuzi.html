@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>兔子先生</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#000;color:#fff;overflow:hidden;user-select:none;font-family:"Comic Sans MS","Chalkboard SE","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;display:flex;align-items:center;justify-content:center}
+  .tv{position:relative;width:min(100vw,133.34vh);aspect-ratio:4/3;background:#05060a;overflow:hidden;box-shadow:0 0 12vmin rgba(0,0,0,.85) inset}
+  #scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .crt{position:absolute;inset:0;pointer-events:none}
+  #picture{position:absolute;inset:0;filter:saturate(1.15) contrast(1.05) brightness(1);transition:filter .9s ease}
+  .scan{z-index:40;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0 2px,rgba(0,0,0,0) 2px 4px);mix-blend-mode:multiply;opacity:.7}
+  .bloom{z-index:41;background:radial-gradient(ellipse at 50% 45%,rgba(255,255,255,.05),transparent 60%);mix-blend-mode:screen}
+  .vig{z-index:42;background:radial-gradient(ellipse at center,transparent 56%,rgba(0,0,0,.5) 82%,rgba(0,0,0,.92) 100%);transition:background .9s}
+  .vig.tight{background:radial-gradient(ellipse at center,transparent 38%,rgba(0,0,0,.7) 70%,rgba(0,0,0,.98) 100%)}
+  .static{z-index:43;opacity:.06;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px;animation:noise .4s steps(5) infinite}
+  .static.heavy{opacity:.55}
+  @keyframes noise{0%{background-position:0 0}25%{background-position:-40px 20px}50%{background-position:30px -30px}75%{background-position:-20px 30px}100%{background-position:40px -10px}}
+  .tracking{z-index:44;height:14%;left:-5%;width:110%;position:absolute;top:120%;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.10) 30%,rgba(120,120,160,.18) 50%,rgba(255,255,255,.08) 70%,transparent);filter:blur(.6px);mix-blend-mode:screen;animation:roll 7s linear infinite;opacity:.7}
+  @keyframes roll{0%{top:120%}100%{top:-20%}}
+  .tracking.fast{animation-duration:1.3s;opacity:1}
+  .fringe{z-index:39;mix-blend-mode:screen;opacity:.25;background:repeating-linear-gradient(90deg,rgba(255,0,40,0) 0 2px,rgba(0,180,255,.06) 2px 3px)}
+  .tv.glitch #picture{animation:jump .16s steps(2)}
+  @keyframes jump{0%{transform:translateX(-9px) skewX(-3deg)}50%{transform:translateX(11px) skewX(4deg)}100%{transform:none}}
+  .hud{position:absolute;z-index:60;left:0;right:0;top:0;display:flex;justify-content:space-between;padding:2.2vmin 2.6vmin;font-family:"Courier New",monospace;font-size:2.4vmin;letter-spacing:.1em;color:#fff;text-shadow:0 0 4px rgba(0,0,0,.9);pointer-events:none}
+  .hud.blink .play{animation:hb 1.1s steps(2) infinite}
+  @keyframes hb{50%{opacity:.25}}
+  .stamp{position:absolute;z-index:60;font-family:"Courier New",monospace;font-size:2.3vmin;letter-spacing:.08em;color:#fff;text-shadow:0 0 4px #000;pointer-events:none;transition:opacity .2s}
+  #stamp{bottom:2.4vmin;left:2.6vmin}#stampGhost{display:none;z-index:59}
+  #place{position:absolute;z-index:60;top:2.2vmin;left:50%;transform:translateX(-50%);font-family:"Courier New",monospace;font-size:2.2vmin;letter-spacing:.2em;color:#ffe;opacity:0;text-shadow:0 0 5px #000;pointer-events:none;transition:opacity .5s}
+  #place.show{opacity:.9}
+  #mute{position:absolute;z-index:65;bottom:2vmin;right:2.4vmin;pointer-events:auto;cursor:pointer;background:rgba(0,0,0,.35);border:.2vmin solid rgba(255,255,255,.5);color:#fff;border-radius:6px;font-family:"Courier New",monospace;font-size:2.1vmin;padding:.5vmin 1.4vmin}
+  #caption{position:absolute;z-index:55;left:50%;bottom:13%;transform:translateX(-50%);max-width:88%;padding:1.6vmin 3vmin;border-radius:2vmin;background:rgba(26,19,48,.82);color:#fff;font-size:3.4vmin;line-height:1.4;text-align:center;border:.35vmin solid rgba(255,255,255,.55);box-shadow:0 .6vmin 0 rgba(0,0,0,.4);display:none;text-shadow:0 .2vmin 0 rgba(0,0,0,.5);pointer-events:none}
+  #caption.show{display:block}#caption .name{color:#ffd86b;font-weight:bold}
+  #answer{position:absolute;z-index:58;left:50%;bottom:4%;transform:translateX(-50%);width:92%;display:none;justify-content:center}
+  #answer.show{display:flex}
+  .ansrow{display:flex;gap:1.4vmin;flex-wrap:wrap;justify-content:center;align-items:center}
+  #ansInput{font-family:inherit;font-size:3.2vmin;padding:1vmin 2vmin;border-radius:1.6vmin;border:.4vmin solid #ffd86b;background:#fffdf4;color:#222;width:42vmin;max-width:70vw;text-align:center;outline:none}
+  .btn{font-family:inherit;cursor:pointer;border:none;border-radius:1.6vmin;font-size:3vmin;padding:1.1vmin 3vmin;background:#ffd86b;color:#3a2b10;box-shadow:0 .6vmin 0 #c79a2e;transition:transform .1s,background .3s}
+  .btn:hover{transform:translateY(-.3vmin)}.btn:active{transform:translateY(.3vmin);box-shadow:0 .2vmin 0 #c79a2e}
+  .btn.alt{background:#ff9aa2;box-shadow:0 .6vmin 0 #c96a72;color:#4a1417}
+  .btn.dark{background:#2a2540;color:#eee;box-shadow:0 .6vmin 0 #000}
+  .btn.locked{background:#595550;color:#8a857c;box-shadow:0 .6vmin 0 #2c2926;cursor:not-allowed;filter:grayscale(1)}
+  .btn.locked:hover{transform:none}
+  .flash{position:absolute;z-index:70;inset:0;display:flex;align-items:center;justify-content:center;background:#0a0a0a;color:#e9e2cf;font-size:10vmin;font-weight:bold;letter-spacing:.08em;opacity:0;pointer-events:none;font-family:"Comic Sans MS",serif}
+  .flash.on{opacity:1}.flash.white{background:#efe9d6;color:#111}
+  #title{position:absolute;z-index:50;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1vmin;text-align:center}
+  #title.show{display:flex}
+  #title .t1{font-size:10vmin;color:#fff;text-shadow:.6vmin .6vmin 0 #b5402f,1.2vmin 1.2vmin 0 rgba(0,0,0,.3);transform:rotate(-3deg)}
+  #title .t2{font-size:3.6vmin;color:#ffd86b;letter-spacing:.3em;text-shadow:.3vmin .3vmin 0 #000}
+  #title .tep{margin-top:1vmin;font-family:"Courier New",monospace;font-size:2.5vmin;color:#fff;opacity:.85}
+  .card{position:absolute;z-index:80;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vmin;background:radial-gradient(ellipse at center,#0d1a10,#000);cursor:pointer}
+  #start{background:linear-gradient(180deg,rgba(8,18,10,.55),rgba(8,18,10,0) 24%,rgba(8,18,10,0) 55%,rgba(6,14,8,.7))}
+  #start .cov-ep{position:absolute;top:7%;font-family:"Courier New",monospace;letter-spacing:.32em;color:#ffe9a8;font-size:2.5vmin;text-shadow:0 .3vmin .5vmin rgba(0,0,0,.8)}
+  #start h1{position:absolute;top:12%;font-size:11vmin;color:#fff;letter-spacing:.03em;font-weight:bold;transform:rotate(-3deg);text-align:center;text-shadow:.5vmin .5vmin 0 #b5402f,1vmin 1vmin 0 #7a2418,0 .4vmin 3vmin rgba(0,0,0,.5)}
+  #start .cov-sub{position:absolute;top:28%;font-family:"Courier New",monospace;letter-spacing:.42em;color:#ffd86b;font-size:2.5vmin;text-shadow:.2vmin .2vmin 0 #000}
+  #start .cov-play{position:absolute;bottom:12%;display:flex;align-items:center;gap:1.6vmin;font-family:inherit;font-weight:bold;font-size:5vmin;color:#fff;background:linear-gradient(180deg,#ff7a5c,#d8392c);border:.55vmin solid #fff;border-radius:99px;padding:1.5vmin 6.5vmin;box-shadow:0 1vmin 0 #8e1c1c,0 1.8vmin 3vmin rgba(0,0,0,.45);cursor:pointer;animation:covpulse 1.8s ease-in-out infinite}
+  #start .cov-play .tri{font-size:4vmin}
+  #start .cov-play:hover{transform:scale(1.04)}
+  @keyframes covpulse{50%{transform:scale(1.06)}}
+  #start .warn{position:absolute;bottom:4.5%;color:#eadfc6;font-size:2.1vmin;font-family:"Courier New",monospace;letter-spacing:.1em;text-shadow:0 .2vmin .5vmin rgba(0,0,0,.85)}
+  #secret{display:none}
+  #win404{position:absolute;inset:0;z-index:90;display:none;background:#f3f3f3;color:#2b2b2b;font-family:"Segoe UI","Microsoft YaHei",Tahoma,Arial,sans-serif}
+  #win404.show{display:block}
+  .w-win{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
+  .w-title{height:6%;min-height:30px;background:#eaeaea;display:flex;align-items:center;justify-content:space-between;padding:0 1.6vmin;font-size:1.9vmin;color:#3a3a3a;border-bottom:1px solid #dcdcdc}
+  .w-ctrls b{display:inline-block;width:4.4vmin;text-align:center;color:#555;font-weight:400}
+  .w-ctrls .w-x{color:#666}
+  .w-bar{display:flex;align-items:center;gap:1.4vmin;padding:1.1vmin 1.8vmin;background:#f7f7f7;border-bottom:1px solid #e3e3e3}
+  .w-nav{color:#0067c0;font-size:2.8vmin}.w-nav.dim{color:#c2c2c2}
+  .w-url{flex:1;background:#fff;border:1px solid #cfcfcf;border-radius:16px;padding:.8vmin 1.8vmin;font-size:2vmin;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .w-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 9%}
+  .w-sad{font-size:10vmin;color:#5a5a5a;font-weight:300;line-height:1}
+  .w-404{font-size:2.8vmin;color:#9a9a9a;letter-spacing:.25em;margin-top:1.2vmin}
+  .w-h{font-size:4.6vmin;font-weight:600;margin:.4vmin 0 1.8vmin}
+  .w-p{font-size:2.5vmin;line-height:1.75;color:#444;max-width:760px}
+  .w-code{margin-top:2.6vmin;font-family:"Consolas","Courier New",monospace;font-size:1.9vmin;color:#a0a0a0}
+  .w-btn{margin-top:3.2vmin;align-self:flex-start;background:#0067c0;color:#fff;border:none;border-radius:2px;padding:1.1vmin 3.6vmin;font-size:2.3vmin;font-family:inherit;cursor:pointer}
+  .w-btn:hover{background:#005aa6}
+  .hidden{display:none!important}
+  @media (max-width:560px){#caption{font-size:4.2vmin}#ansInput{font-size:4.2vmin}.btn{font-size:3.7vmin}}
+</style>
+</head>
+<body>
+<div class="tv" id="tv">
+  <div id="picture">
+  <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86d2f5"/><stop offset="1" stop-color="#cfeede"/></linearGradient>
+      <radialGradient id="sunGlow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff7cf"/><stop offset="1" stop-color="#fff7cf" stop-opacity="0"/></radialGradient>
+      <linearGradient id="trunkG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9c6b3f"/><stop offset="1" stop-color="#7a4f2c"/></linearGradient>
+      <linearGradient id="deepSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2740"/><stop offset="1" stop-color="#243a32"/></linearGradient>
+      <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e4a30"/><stop offset="1" stop-color="#4a3020"/></linearGradient>
+      <radialGradient id="lampG" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#ffdf9e" stop-opacity="0.8"/><stop offset="1" stop-color="#ffdf9e" stop-opacity="0"/></radialGradient>
+      <radialGradient id="mushG" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#bfffe6" stop-opacity="0.9"/><stop offset="1" stop-color="#bfffe6" stop-opacity="0"/></radialGradient>
+    </defs>
+
+    <g id="bgForest">
+      <rect x="0" y="0" width="800" height="600" fill="url(#skyGrad)"/>
+      <g id="sun"><circle cx="120" cy="100" r="95" fill="url(#sunGlow)"/><circle cx="120" cy="100" r="46" fill="#fff1a8" stroke="#ffe07a" stroke-width="4"/></g>
+      <g id="clouds" fill="#ffffff" opacity="0.95"><g id="cloud1"><ellipse cx="610" cy="100" rx="60" ry="30"/><ellipse cx="660" cy="110" rx="44" ry="25"/><ellipse cx="568" cy="115" rx="38" ry="21"/></g><g id="cloud2"><ellipse cx="330" cy="74" rx="46" ry="23"/><ellipse cx="368" cy="84" rx="34" ry="19"/><ellipse cx="296" cy="86" rx="30" ry="17"/></g></g>
+      <path d="M0 472 Q160 408 360 462 Q560 516 800 446 L800 600 L0 600 Z" fill="#a7da86"/>
+      <path d="M0 512 Q220 458 460 502 Q620 534 800 494 L800 600 L0 600 Z" fill="#79c267"/>
+      <g id="trees">
+        <g transform="translate(40,0)"><rect x="-15" y="392" width="30" height="120" rx="8" fill="url(#trunkG)" stroke="#5b3a20" stroke-width="4"/><circle cx="0" cy="360" r="72" fill="#5fa84f" stroke="#3f7d34" stroke-width="5"/><circle cx="-46" cy="398" r="44" fill="#69b257" stroke="#3f7d34" stroke-width="5"/><circle cx="46" cy="398" r="44" fill="#69b257" stroke="#3f7d34" stroke-width="5"/></g>
+        <g transform="translate(132,0)"><rect x="-12" y="428" width="24" height="86" rx="7" fill="url(#trunkG)" stroke="#5b3a20" stroke-width="4"/><circle cx="0" cy="404" r="52" fill="#5fa84f" stroke="#3f7d34" stroke-width="5"/><circle cx="-32" cy="430" r="32" fill="#69b257" stroke="#3f7d34" stroke-width="5"/></g>
+        <g transform="translate(218,0)"><rect x="-10" y="448" width="20" height="66" rx="6" fill="#8a5a33" stroke="#5b3a20" stroke-width="4"/><circle cx="0" cy="430" r="40" fill="#62ad51" stroke="#3f7d34" stroke-width="5"/></g>
+        <g transform="translate(582,0)"><rect x="-10" y="448" width="20" height="66" rx="6" fill="#8a5a33" stroke="#5b3a20" stroke-width="4"/><circle cx="0" cy="430" r="40" fill="#62ad51" stroke="#3f7d34" stroke-width="5"/></g>
+        <g transform="translate(668,0)"><rect x="-12" y="428" width="24" height="86" rx="7" fill="url(#trunkG)" stroke="#5b3a20" stroke-width="4"/><circle cx="0" cy="404" r="52" fill="#5fa84f" stroke="#3f7d34" stroke-width="5"/><circle cx="32" cy="430" r="32" fill="#69b257" stroke="#3f7d34" stroke-width="5"/></g>
+        <g transform="translate(760,0)"><rect x="-15" y="392" width="30" height="120" rx="8" fill="url(#trunkG)" stroke="#5b3a20" stroke-width="4"/><circle cx="0" cy="360" r="72" fill="#5fa84f" stroke="#3f7d34" stroke-width="5"/><circle cx="-46" cy="398" r="44" fill="#69b257" stroke="#3f7d34" stroke-width="5"/><circle cx="46" cy="398" r="44" fill="#69b257" stroke="#3f7d34" stroke-width="5"/></g>
+      </g>
+      <rect x="0" y="500" width="800" height="100" fill="#5fa84f"/>
+      <path d="M0 600 L330 516 Q400 506 470 516 L800 600 Z" fill="#caa46a"/>
+      <path d="M0 600 L345 526 Q400 518 455 526 L800 600 Z" fill="#d8b87f"/>
+      <g id="forestFx">
+        <g transform="translate(60,560)"><ellipse cx="0" cy="0" rx="120" ry="58" fill="#4f9a41" stroke="#3a7531" stroke-width="5"/><ellipse cx="-60" cy="6" rx="58" ry="38" fill="#58a648" stroke="#3a7531" stroke-width="5"/></g>
+        <g transform="translate(748,566)"><ellipse cx="0" cy="0" rx="128" ry="60" fill="#4f9a41" stroke="#3a7531" stroke-width="5"/><ellipse cx="60" cy="6" rx="62" ry="40" fill="#58a648" stroke="#3a7531" stroke-width="5"/></g>
+        <g transform="translate(112,544)"><circle r="9" fill="#ffd54a"/><g fill="#ff7e9d"><circle cx="-13" r="8"/><circle cx="13" r="8"/><circle cy="-13" r="8"/><circle cy="13" r="8"/></g><circle r="7" fill="#ffd54a"/></g>
+        <g transform="translate(690,552)"><circle r="9" fill="#ffd54a"/><g fill="#9b7bff"><circle cx="-13" r="8"/><circle cx="13" r="8"/><circle cy="-13" r="8"/><circle cy="13" r="8"/></g><circle r="7" fill="#ffd54a"/></g>
+        <g transform="translate(400,486)"><rect x="-6" y="0" width="12" height="60" fill="#8a5a33" stroke="#5b3a20" stroke-width="3"/><rect x="-52" y="-26" width="104" height="34" rx="4" fill="#b07f4c" stroke="#5b3a20" stroke-width="3"/><text x="0" y="-3" text-anchor="middle" font-family="Comic Sans MS, sans-serif" font-size="17" fill="#3a2412" font-weight="bold">欢迎来森林</text></g>
+      </g>
+    </g>
+
+    <g id="bgDeep" style="display:none">
+      <rect x="0" y="0" width="800" height="600" fill="url(#deepSky)"/>
+      <circle cx="660" cy="92" r="40" fill="#cdd6e0" opacity="0.5"/><circle cx="648" cy="86" r="40" fill="#1b2740" opacity="0.5"/>
+      <g fill="#16241c"><path d="M40 600 L40 250 Q30 188 70 158 Q60 208 80 250 L80 600 Z"/><path d="M150 600 L150 310 Q140 260 175 232 L185 310 L185 600 Z"/><path d="M730 600 L730 230 Q720 168 760 150 L770 250 L770 600 Z"/><path d="M620 600 L620 310 Q612 260 648 236 L656 310 L656 600 Z"/></g>
+      <g stroke="#0e1812" stroke-width="6" fill="none" opacity="0.8"><path d="M60 258 q40 -10 70 10 M70 206 q50 0 90 -20"/><path d="M750 238 q-50 -10 -90 12 M760 188 q-60 0 -100 -18"/></g>
+      <rect x="0" y="504" width="800" height="96" fill="#15201a"/>
+      <path d="M400 504 L350 600 L450 600 Z" fill="#3a4640" opacity="0.7"/><path d="M400 504 L380 544 L420 544 Z" fill="#586a5e" opacity="0.6"/>
+      <g id="mushrooms">
+        <g id="mush1" transform="translate(110,524)"><ellipse cx="0" cy="34" rx="20" ry="6" fill="url(#mushG)"/><rect x="-5" y="6" width="10" height="26" rx="4" fill="#e8e2d0"/><path d="M-20 8 q20 -26 40 0 Z" fill="#7ad0a0" stroke="#3a7d5c" stroke-width="2"/></g>
+        <g id="mush2" transform="translate(212,520)"><ellipse cx="0" cy="32" rx="20" ry="6" fill="url(#mushG)"/><rect x="-5" y="6" width="10" height="24" rx="4" fill="#e8e2d0"/><path d="M-19 8 q19 -24 38 0 Z" fill="#8ad8ac" stroke="#3a7d5c" stroke-width="2"/></g>
+        <g id="mush3" transform="translate(588,520)"><ellipse cx="0" cy="32" rx="20" ry="6" fill="url(#mushG)"/><rect x="-5" y="6" width="10" height="24" rx="4" fill="#e8e2d0"/><path d="M-19 8 q19 -24 38 0 Z" fill="#7ad0a0" stroke="#3a7d5c" stroke-width="2"/></g>
+        <g id="mush4" transform="translate(690,524)"><ellipse cx="0" cy="34" rx="20" ry="6" fill="url(#mushG)"/><rect x="-5" y="6" width="10" height="26" rx="4" fill="#e8e2d0"/><path d="M-20 8 q20 -26 40 0 Z" fill="#8ad8ac" stroke="#3a7d5c" stroke-width="2"/><circle cx="0" cy="-4" r="6" fill="#fbf7ec"/><circle cx="1" cy="-3" r="3" fill="#1a1a1a"/></g>
+      </g>
+    </g>
+
+    <g id="bgBurrow" style="display:none">
+      <rect x="0" y="0" width="800" height="600" fill="url(#wallG)"/>
+      <g stroke="#3a2616" stroke-width="9" fill="none" opacity="0.7"><path d="M-10 120 Q200 60 420 120 T820 110"/><path d="M-10 60 Q260 10 520 70 T820 50"/><path d="M120 0 Q140 120 90 240 M690 0 Q670 130 720 250"/></g>
+      <circle cx="400" cy="150" r="220" fill="url(#lampG)"/>
+      <g id="lamp"><line x1="400" y1="0" x2="400" y2="86" stroke="#2a1c10" stroke-width="4"/><path d="M372 86 h56 l-10 26 h-36 Z" fill="#caa24a" stroke="#7a5a20" stroke-width="3"/><circle cx="400" cy="120" r="7" fill="#fff4cf"/></g>
+      <g id="door"><path d="M70 472 L70 332 Q70 252 150 252 Q230 252 230 332 L230 472 Z" fill="#1a1109" stroke="#2a1c10" stroke-width="8"/><circle cx="210" cy="372" r="7" fill="#caa24a"/><path d="M150 472 L150 252" stroke="#241710" stroke-width="3" opacity="0.6"/></g>
+      <g id="window"><circle cx="726" cy="338" r="44" fill="#0c1430" stroke="#2a1c10" stroke-width="7"/><circle cx="714" cy="324" r="4" fill="#ffe85c" opacity="0.7"/><circle cx="738" cy="352" r="3" fill="#ffe85c" opacity="0.5"/><path d="M726 294 L726 382 M682 338 L770 338" stroke="#2a1c10" stroke-width="4"/></g>
+      <rect x="0" y="472" width="800" height="128" fill="#3a2616"/>
+      <ellipse cx="400" cy="540" rx="240" ry="56" fill="#8a3b3b"/><ellipse cx="400" cy="540" rx="170" ry="38" fill="#a85050"/><ellipse cx="400" cy="540" rx="96" ry="20" fill="#8a3b3b"/>
+      <g transform="translate(610,472)"><rect x="-44" y="0" width="88" height="14" rx="3" fill="#6e4a30" stroke="#3a2616" stroke-width="3"/><rect x="-36" y="14" width="10" height="40" fill="#5a3a22"/><rect x="26" y="14" width="10" height="40" fill="#5a3a22"/><path d="M-10 -2 q10 -16 24 0 q2 12 -12 12 q-14 0 -12 -12 Z" fill="#efe7d6" stroke="#b9ab90" stroke-width="2"/></g>
+      <g id="portraits">
+        <g id="pf1" transform="translate(72,118)"><rect x="-32" y="-38" width="64" height="76" rx="3" fill="#caa24a" stroke="#7a5a20" stroke-width="4"/><rect x="-24" y="-30" width="48" height="60" fill="#efe7d2"/><circle cx="0" cy="-8" r="14" fill="#f4d6b0"/><circle cx="-5" cy="-10" r="2" fill="#222"/><circle cx="6" cy="-10" r="2" fill="#222"/><path d="M-7 -2 q7 6 14 0" stroke="#a05" stroke-width="2" fill="none"/></g>
+        <g id="pf2" transform="translate(160,118)"><rect x="-32" y="-38" width="64" height="76" rx="3" fill="#caa24a" stroke="#7a5a20" stroke-width="4"/><rect x="-24" y="-30" width="48" height="60" fill="#efe7d2"/><circle cx="0" cy="-8" r="14" fill="#f2c89a"/><circle cx="-5" cy="-10" r="2" fill="#222"/><circle cx="6" cy="-10" r="2" fill="#222"/><path d="M-7 1 q7 -6 14 0" stroke="#a05" stroke-width="2" fill="none"/></g>
+        <g id="pf3" transform="translate(248,118)"><rect x="-32" y="-38" width="64" height="76" rx="3" fill="#caa24a" stroke="#7a5a20" stroke-width="4"/><rect x="-24" y="-30" width="48" height="60" fill="#efe7d2"/><circle cx="0" cy="-8" r="14" fill="#f4d6b0"/><circle cx="-5" cy="-10" r="2" fill="#222"/><circle cx="6" cy="-10" r="2" fill="#222"/><path d="M-22 -28 L22 28 M22 -28 L-22 28 M-22 2 L22 -4" stroke="#3a1010" stroke-width="3" fill="none" opacity="0.8"/></g>
+        <g id="pf4" transform="translate(552,118)"><rect x="-32" y="-38" width="64" height="76" rx="3" fill="#caa24a" stroke="#7a5a20" stroke-width="4"/><rect x="-24" y="-30" width="48" height="60" fill="#efe7d2"/><circle cx="0" cy="-8" r="14" fill="#f2c89a"/><circle cx="-5" cy="-10" r="2" fill="#222"/><circle cx="6" cy="-10" r="2" fill="#222"/><path d="M-7 -1 h14" stroke="#a05" stroke-width="2"/></g>
+        <g id="pf5" transform="translate(640,118)"><rect x="-32" y="-38" width="64" height="76" rx="3" fill="#caa24a" stroke="#7a5a20" stroke-width="4"/><rect x="-24" y="-30" width="48" height="60" fill="#efe7d2"/><circle cx="0" cy="-8" r="14" fill="#f4d6b0"/><path d="M-20 -26 L20 26 M20 -26 L-20 26" stroke="#3a1010" stroke-width="4" fill="none" opacity="0.85"/></g>
+        <g id="pf6" transform="translate(728,118)"><rect x="-32" y="-38" width="64" height="76" rx="3" fill="#caa24a" stroke="#7a5a20" stroke-width="4"/><rect x="-24" y="-30" width="48" height="60" fill="#d8cdb4"/><rect x="-24" y="-30" width="48" height="60" fill="#000" opacity="0.06"/><text x="0" y="6" text-anchor="middle" font-family="Comic Sans MS" font-size="13" fill="#9a8f74">？</text></g>
+      </g>
+    </g>
+
+    <g id="bgDoor" style="display:none">
+      <rect x="0" y="0" width="800" height="600" fill="#0a0b10"/>
+      <rect x="356" y="120" width="88" height="170" fill="#14171f"/><rect x="368" y="132" width="64" height="158" fill="#1c2029"/>
+      <g id="frameWall">
+        <g transform="translate(80,110)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/></g>
+        <g transform="translate(170,110)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/><circle cx="0" cy="-6" r="10" fill="#2a2d34" opacity="0.8"/></g>
+        <g transform="translate(260,110)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/></g>
+        <g transform="translate(540,110)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/></g>
+        <g transform="translate(630,110)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/><circle cx="0" cy="-6" r="10" fill="#2a2d34" opacity="0.8"/></g>
+        <g transform="translate(720,110)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/></g>
+        <g transform="translate(70,250)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/></g>
+        <g transform="translate(160,250)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/></g>
+        <g transform="translate(640,250)"><rect x="-26" y="-32" width="52" height="64" fill="#15171e" stroke="#3a3f4a" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/></g>
+        <g transform="translate(730,250)"><rect x="-26" y="-32" width="52" height="64" fill="#1c1a14" stroke="#7a5a20" stroke-width="3"/><rect x="-20" y="-26" width="40" height="52" fill="#0c0d12"/><text x="0" y="6" text-anchor="middle" font-family="Comic Sans MS" font-size="12" fill="#6a6048">？</text></g>
+      </g>
+      <rect x="0" y="524" width="800" height="76" fill="#070809"/>
+    </g>
+
+    <g id="animals">
+      <g id="bird1" style="display:none" transform="translate(150,492)"><ellipse cx="0" cy="0" rx="16" ry="12" fill="#ff9d4d" stroke="#d2691e" stroke-width="2"/><circle cx="12" cy="-8" r="9" fill="#ffb766" stroke="#d2691e" stroke-width="2"/><circle cx="15" cy="-9" r="2" fill="#1a1a1a"/><path d="M21 -8 l9 2 l-9 3 Z" fill="#e07a2a"/><path d="M-6 -2 q-16 -10 -26 2 q16 5 26 -5 Z" fill="#f08a36"/><path d="M-6 12 v6 m10 -6 v6" stroke="#d2691e" stroke-width="2"/></g>
+      <g id="bf1" style="display:none" transform="translate(700,432)"><path d="M0 0 q-18 -16 -26 2 q12 14 26 2 Z" fill="#ff86c2" stroke="#d05a8e" stroke-width="2"/><path d="M0 0 q18 -16 26 2 q-12 14 -26 2 Z" fill="#ff86c2" stroke="#d05a8e" stroke-width="2"/><line x1="0" y1="-8" x2="0" y2="8" stroke="#5a2a3a" stroke-width="3"/></g>
+      <g id="sqF" style="display:none" transform="translate(620,506)"><path d="M-6 -8 q-42 -8 -38 -52 q2 -34 32 -36 q-22 14 -16 38 q5 24 28 28 Z" fill="#9a6536" stroke="#6e4a2a" stroke-width="3"/><ellipse cx="6" cy="-28" rx="20" ry="26" fill="#a9703f" stroke="#6e4a2a" stroke-width="3"/><ellipse cx="9" cy="-24" rx="10" ry="17" fill="#d9b48a"/><circle cx="14" cy="-56" r="15" fill="#a9703f" stroke="#6e4a2a" stroke-width="3"/><path d="M4 -68 l-3 -12 l10 5 Z" fill="#a9703f" stroke="#6e4a2a" stroke-width="2"/><path d="M24 -68 l3 -12 l-10 5 Z" fill="#a9703f" stroke="#6e4a2a" stroke-width="2"/><circle cx="18" cy="-58" r="3.6" fill="#1a1a1a"/><circle cx="19" cy="-59" r="1.2" fill="#fff"/><circle cx="27" cy="-54" r="2.4" fill="#5a3a2a"/><g transform="translate(17,-32)"><ellipse cx="0" cy="0" rx="6" ry="5" fill="#c98f4a"/><path d="M-6 -4 h12 v3 h-12 Z" fill="#7a4f2c"/></g></g>
+      <g id="sqC" style="display:none" transform="translate(560,508)"><path d="M-6 -8 q-42 -8 -38 -52 q2 -34 32 -36 q-22 14 -16 38 q5 24 28 28 Z" fill="#9a6536" stroke="#6e4a2a" stroke-width="3"/><ellipse cx="6" cy="-28" rx="20" ry="26" fill="#a9703f" stroke="#6e4a2a" stroke-width="3"/><ellipse cx="9" cy="-24" rx="10" ry="17" fill="#d9b48a"/><circle cx="14" cy="-56" r="15" fill="#a9703f" stroke="#6e4a2a" stroke-width="3"/><path d="M4 -68 l-3 -12 l10 5 Z" fill="#a9703f" stroke="#6e4a2a" stroke-width="2"/><path d="M24 -68 l3 -12 l-10 5 Z" fill="#a9703f" stroke="#6e4a2a" stroke-width="2"/><circle cx="18" cy="-58" r="3.6" fill="#1a1a1a"/><circle cx="19" cy="-59" r="1.2" fill="#fff"/><circle cx="27" cy="-54" r="2.4" fill="#5a3a2a"/><g transform="translate(17,-32)"><ellipse cx="0" cy="0" rx="6" ry="5" fill="#c98f4a"/><path d="M-6 -4 h12 v3 h-12 Z" fill="#7a4f2c"/></g></g>
+      <g id="fox" style="display:none" transform="translate(652,508)"><path d="M-6 -8 q-40 -6 -38 -44 q2 -22 22 -26 q-14 14 -10 34 q4 22 26 24 Z" fill="#e8814a" stroke="#b85f2e" stroke-width="3"/><path d="M-40 -44 q-6 -16 8 -22 q8 8 4 22 Z" fill="#fff"/><ellipse cx="6" cy="-24" rx="20" ry="24" fill="#e8814a" stroke="#b85f2e" stroke-width="3"/><ellipse cx="8" cy="-18" rx="10" ry="15" fill="#fff"/><circle cx="8" cy="-52" r="16" fill="#e8814a" stroke="#b85f2e" stroke-width="3"/><path d="M8 -50 q-13 4 -13 15 q13 0 13 -15 Z" fill="#fff"/><path d="M8 -50 q13 4 13 15 q-13 0 -13 -15 Z" fill="#fff"/><path d="M-4 -64 l-6 -16 l13 7 Z" fill="#e8814a" stroke="#b85f2e" stroke-width="2"/><path d="M20 -64 l6 -16 l-13 7 Z" fill="#e8814a" stroke="#b85f2e" stroke-width="2"/><path d="M0 -55 l5 5 m0 -5 l-5 5" stroke="#1a1a1a" stroke-width="2"/><path d="M11 -55 l5 5 m0 -5 l-5 5" stroke="#1a1a1a" stroke-width="2"/><path d="M8 -44 l-4 5 h8 Z" fill="#2a1a14"/></g>
+      <g id="owl" style="display:none" transform="translate(740,510)"><ellipse cx="0" cy="-28" rx="22" ry="28" fill="#8a6a44" stroke="#5e4630" stroke-width="3"/><ellipse cx="0" cy="-22" rx="13" ry="18" fill="#c8a878"/><path d="M-16 -50 l-4 -16 l13 9 Z" fill="#8a6a44" stroke="#5e4630" stroke-width="2"/><path d="M16 -50 l4 -16 l-13 9 Z" fill="#8a6a44" stroke="#5e4630" stroke-width="2"/><circle cx="-9" cy="-40" r="9" fill="#fff" stroke="#5e4630" stroke-width="2"/><circle cx="9" cy="-40" r="9" fill="#fff" stroke="#5e4630" stroke-width="2"/><circle cx="-9" cy="-40" r="4.4" fill="#1a1a1a"/><circle cx="9" cy="-40" r="4.4" fill="#1a1a1a"/><path d="M0 -34 l-4 6 h8 Z" fill="#e0a23a"/><path d="M-9 0 v4 m-4 -1 h8 M9 0 v4 m-4 -1 h8" stroke="#e0a23a" stroke-width="2"/></g>
+      <g id="deer" style="display:none" transform="translate(118,508)"><g stroke="#7a4f2c" stroke-width="6" stroke-linecap="round"><path d="M-18 -2 V-30"/><path d="M-6 -2 V-32"/><path d="M14 -2 V-32"/><path d="M24 -2 V-30"/></g><ellipse cx="2" cy="-36" rx="28" ry="16" fill="#c08a52" stroke="#8a5a33" stroke-width="3"/><circle cx="-6" cy="-40" r="2.4" fill="#f0e0c0"/><circle cx="8" cy="-34" r="2.4" fill="#f0e0c0"/><circle cx="16" cy="-42" r="2.4" fill="#f0e0c0"/><path d="M24 -42 q16 -6 18 -28 l8 2 q-2 24 -18 34 Z" fill="#c08a52" stroke="#8a5a33" stroke-width="3"/><ellipse cx="48" cy="-70" rx="11" ry="9" fill="#c08a52" stroke="#8a5a33" stroke-width="3"/><path d="M42 -78 l-4 -10 l9 5 Z" fill="#c08a52" stroke="#8a5a33" stroke-width="2"/><path d="M52 -78 q3 -13 -2 -19 m2 9 l8 -5" stroke="#8a5a33" stroke-width="3" fill="none"/><circle cx="52" cy="-70" r="2.4" fill="#1a1a1a"/><ellipse cx="58" cy="-67" rx="3" ry="2.4" fill="#5a3a2a"/></g>
+    </g>
+
+    <g id="nightLayer" pointer-events="none">
+      <rect id="dusk" x="0" y="0" width="800" height="600" fill="#0a1024" opacity="0"/>
+      <g id="fog" opacity="0" fill="#cfd6dd"><ellipse cx="200" cy="540" rx="220" ry="34" opacity="0.5"/><ellipse cx="600" cy="560" rx="240" ry="36" opacity="0.45"/><ellipse cx="420" cy="575" rx="300" ry="30" opacity="0.4"/></g>
+      <g id="watchEyes" opacity="0" fill="#ffe85c"><circle cx="48" cy="300" r="4.5"/><circle cx="62" cy="300" r="4.5"/><circle cx="744" cy="290" r="4.5"/><circle cx="758" cy="290" r="4.5"/><circle cx="160" cy="350" r="4"/><circle cx="172" cy="350" r="4"/><circle cx="636" cy="358" r="4"/><circle cx="648" cy="358" r="4"/><circle cx="305" cy="378" r="3.6"/><circle cx="315" cy="378" r="3.6"/><circle cx="505" cy="378" r="3.6"/><circle cx="515" cy="378" r="3.6"/></g>
+      <circle id="moon" cx="660" cy="92" r="0" fill="#c9402f" opacity="0"/>
+    </g>
+
+    <g id="rabbitBob" pointer-events="none"><g id="rabbitScale">
+      <g id="bodyGroup">
+        <g id="armWave">
+          <path d="M312 470 C262 452 236 404 244 360" fill="none" stroke="#4a3b34" stroke-width="9"/>
+          <path d="M312 470 C262 452 236 404 244 360" fill="none" stroke="#f3efe6" stroke-width="24" stroke-linecap="round"/>
+          <circle cx="244" cy="352" r="30" fill="#f3efe6" stroke="#4a3b34" stroke-width="5"/>
+          <ellipse cx="244" cy="360" rx="13" ry="11" fill="#f3a9bd"/><circle cx="232" cy="340" r="4.6" fill="#f3a9bd"/><circle cx="244" cy="335" r="4.6" fill="#f3a9bd"/><circle cx="256" cy="340" r="4.6" fill="#f3a9bd"/>
+        </g>
+        <g id="armRest">
+          <path d="M498 474 C552 480 580 520 568 558" fill="none" stroke="#4a3b34" stroke-width="9"/>
+          <path d="M498 474 C552 480 580 520 568 558" fill="none" stroke="#f3efe6" stroke-width="24" stroke-linecap="round"/>
+          <circle cx="566" cy="560" r="28" fill="#f3efe6" stroke="#4a3b34" stroke-width="5"/>
+        </g>
+        <path d="M400 600 C300 600 260 556 268 484 C275 426 336 402 400 402 C464 402 525 426 532 484 C540 556 500 600 400 600 Z" fill="#f3efe6" stroke="#4a3b34" stroke-width="6"/>
+        <ellipse cx="400" cy="516" rx="62" ry="86" fill="#f49ab4"/>
+        <ellipse cx="338" cy="598" rx="32" ry="18" fill="#f3efe6" stroke="#4a3b34" stroke-width="5"/><ellipse cx="338" cy="594" rx="13" ry="7" fill="#f3a9bd"/>
+        <ellipse cx="462" cy="598" rx="32" ry="18" fill="#f3efe6" stroke="#4a3b34" stroke-width="5"/><ellipse cx="462" cy="594" rx="13" ry="7" fill="#f3a9bd"/>
+      </g>
+      <g id="headGroup">
+        <g id="earL"><path d="M330 224 C300 110 316 40 352 40 C388 40 372 150 366 226 Z" fill="#f3efe6" stroke="#4a3b34" stroke-width="6"/><path d="M340 212 C322 118 332 74 352 74 C372 76 364 150 358 212 Z" fill="#f4a6c0"/></g>
+        <g id="earR"><path d="M470 224 C500 116 498 44 458 50 C426 55 432 150 434 226 Z" fill="#f3efe6" stroke="#4a3b34" stroke-width="6"/><path d="M462 212 C480 124 478 82 456 84 C436 88 440 150 442 212 Z" fill="#f4a6c0"/></g>
+        <ellipse id="head" cx="400" cy="300" rx="150" ry="142" fill="#f3efe6" stroke="#4a3b34" stroke-width="6"/>
+        <path id="browL" d="M322 244 q30 -12 56 -3" stroke="#cdbfa6" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path id="browR" d="M422 241 q30 -10 56 3" stroke="#cdbfa6" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <g id="eyeL"><circle cx="356" cy="300" r="23" fill="#141210" stroke="#2a2620" stroke-width="2"/><circle cx="348" cy="291" r="6.5" fill="#fff" opacity="0.92"/><circle cx="362" cy="305" r="3" fill="#fff" opacity="0.5"/></g>
+        <g id="eyeR"><circle cx="444" cy="300" r="23" fill="#141210" stroke="#2a2620" stroke-width="2"/><circle cx="436" cy="291" r="6.5" fill="#fff" opacity="0.92"/><circle cx="450" cy="305" r="3" fill="#fff" opacity="0.5"/></g>
+        <path d="M400 332 c-15 0 -18 14 0 18 c18 -4 15 -18 0 -18 Z" fill="#ef7d97" stroke="#cf5f78" stroke-width="2"/>
+        <path id="philtrum" d="M400 350 v16" stroke="#b9ab90" stroke-width="3"/>
+        <g stroke="#cdbfa6" stroke-width="3" stroke-linecap="round" opacity="0.8"><path d="M304 338 l-26 -6 M304 352 l-28 2"/><path d="M496 338 l26 -6 M496 352 l28 2"/></g>
+        <g id="mouthGroup">
+          <path id="mouth" d="M364 366 Q400 372 436 366 Q438 416 400 420 Q362 416 364 366 Z" fill="#b3252b" stroke="#4a3b34" stroke-width="4"/>
+          <clipPath id="mouthClip"><path id="mouthClipPath" d="M364 366 Q400 372 436 366 Q438 416 400 420 Q362 416 364 366 Z"/></clipPath>
+          <g clip-path="url(#mouthClip)">
+            <ellipse id="tongue" cx="400" cy="402" rx="20" ry="11" fill="#e0586a"/>
+            <g id="teeth"><rect x="388" y="362" width="12" height="20" rx="2.5" fill="#fdfaf0" stroke="#cabf9f" stroke-width="1.5"/><rect x="401" y="362" width="12" height="20" rx="2.5" fill="#f3e7b0" stroke="#cabf9f" stroke-width="1.5"/></g>
+          </g>
+        </g>
+      </g>
+    </g></g>
+  </svg>
+  </div>
+
+  <div class="crt fringe"></div><div class="crt scan"></div><div class="crt bloom"></div>
+  <div class="crt static" id="staticEl"></div><div class="crt tracking" id="trackEl"></div><div class="crt vig" id="vig"></div>
+  <div class="flash" id="flash"></div>
+  <div id="title"><div class="t1">兔子先生的森林</div></div>
+  <div class="hud blink" id="hud"><div class="play"><span class="tri">▶</span> PLAY</div><div class="rec">SP　○REC</div></div>
+  <div class="stamp" id="stamp">森林频道　2013　00:00:00</div>
+  <div class="stamp" id="stampGhost">森林频道　2013　00:00:00</div>
+  <div id="place">森 林 入 口</div>
+  <button id="mute">♪ 声音：开</button>
+  <div id="caption"></div>
+  <div id="answer"><div class="ansrow" id="ansrow"></div></div>
+  <div id="secret"></div>
+  <div class="card" id="start">
+    <div class="cov-ep">森 林 里 的 小 动 物　</div>
+    <h1>兔子先生的森林</h1>
+    <div class="cov-sub">MR. RABBIT'S FOREST</div>
+    <button class="cov-play" id="playBtn"><span class="tri">▶</span>播 放</button>
+    <div class="warn">📼 互动录像带 · 建议佩戴耳机 · 含轻微闪烁</div></div>
+  <div id="win404">
+    <div class="w-win">
+      <div class="w-title"><span class="w-tname">forestchannel.tv — 找不到页面</span><span class="w-ctrls"><b>—</b><b>□</b><b class="w-x">✕</b></span></div>
+      <div class="w-bar"><span class="w-nav">←</span><span class="w-nav dim">→</span><span class="w-nav">⟳</span><div class="w-url">forestchannel.tv/mr-rabbit/reel1.html</div></div>
+      <div class="w-body">
+        <div class="w-h">找不到此页面</div>
+        <div class="w-p">你要找的内容 <b>「UNGWEW」</b> 已经不在这里了。
+        <div class="w-code">HTTP ERROR 404 · FOREST_NOT_FOUND</div>
+        <button class="w-btn" id="w404btn">返回</button>
+      </div>
+    </div></div>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const tv=$('tv'),picture=$('picture'),flash=$('flash'),caption=$('caption'),answer=$('answer'),ansrow=$('ansrow'),
+  title=$('title'),startCard=$('start'),staticEl=$('staticEl'),trackEl=$('trackEl'),
+  stampEl=$('stamp'),stampGhost=$('stampGhost'),muteBtn=$('mute'),hud=$('hud'),vig=$('vig'),placeEl=$('place');
+
+let AC,master,noiseBuf,muted=false,audioOn=false,birdTimer=null;
+function initAudio(){ if(audioOn)return; try{ AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=0; master.connect(AC.destination);
+  noiseBuf=AC.createBuffer(1,AC.sampleRate,AC.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  audioOn=true; if(AC.state==='suspended')AC.resume(); ramp(master.gain,muted?0:0.6,1.2); startHiss(); }catch(e){audioOn=false;} }
+function ramp(p,to,t){const n=AC.currentTime;p.cancelScheduledValues(n);p.setValueAtTime(p.value,n);p.linearRampToValueAtTime(to,n+t);}
+function startHiss(){ const s=AC.createBufferSource();s.buffer=noiseBuf;s.loop=true;const hp=AC.createBiquadFilter();hp.type='highpass';hp.frequency.value=2600;const g=AC.createGain();g.gain.value=0.016;s.connect(hp);hp.connect(g);g.connect(master);s.start();
+  const h=AC.createOscillator(),hg=AC.createGain();h.type='sine';h.frequency.value=60;hg.gain.value=0.04;h.connect(hg);hg.connect(master);h.start(); }
+function blip(p=440){ if(!audioOn||muted)return; const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=p*(0.92+Math.random()*0.16);
+  g.gain.setValueAtTime(0.0001,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.10,AC.currentTime+0.006);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.08);o.connect(g);g.connect(master);o.start();o.stop(AC.currentTime+0.1); }
+function note(f,when,dur,gain=0.12,type='triangle'){ if(!audioOn)return; const t=AC.currentTime+when,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+0.05); }
+function jingle(detune=1,minor=false){ if(!audioOn)return; const b=minor?[523,587,622,784,622,523]:[523,659,784,1046,784,659];const tm=[0,.22,.44,.66,.95,1.25],du=[.22,.22,.22,.4,.3,.6];b.forEach((f,i)=>note(f*detune,tm[i],du[i],0.11,'triangle')); note((minor?130:131)*detune,0,1.8,0.07,'sine'); }
+function chirp(){ if(!audioOn||muted)return; const f=1600+Math.random()*900; note(f,0,.08,0.045,'sine'); note(f*1.18,0.09,.07,0.035,'sine'); }
+function startBirds(){ if(birdTimer||!audioOn)return; birdTimer=setInterval(()=>{ if(!muted&&Math.random()<0.55)chirp(); },950); }
+function killBirds(){ clearInterval(birdTimer); birdTimer=null; }
+function stinger(){ note(196,0,.7,0.16,'sawtooth');note(277,0,.7,0.14,'sawtooth');note(98,0,1.0,0.18,'sine'); }
+function lowThud(){ note(70,0,.5,0.2,'sine'); note(46,0,.7,0.18,'sine'); }
+function tapeStop(){ if(!audioOn)return; const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(600,AC.currentTime);o.frequency.exponentialRampToValueAtTime(40,AC.currentTime+0.8);g.gain.setValueAtTime(0.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.85);o.connect(g);g.connect(master);o.start();o.stop(AC.currentTime+0.9); }
+function creak(){ if(!audioOn)return; const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(90,AC.currentTime);o.frequency.linearRampToValueAtTime(160,AC.currentTime+0.9);g.gain.setValueAtTime(0.0001,AC.currentTime);g.gain.linearRampToValueAtTime(0.06,AC.currentTime+0.1);g.gain.linearRampToValueAtTime(0.0001,AC.currentTime+0.95);o.connect(g);g.connect(master);o.start();o.stop(AC.currentTime+1); }
+function setMute(m){muted=m;muteBtn.textContent=m?'♪ 声音：关':'♪ 声音：开';if(audioOn)ramp(master.gain,m?0:0.55,0.25);}
+muteBtn.addEventListener('click',e=>{e.stopPropagation();if(!audioOn)initAudio();setMute(!muted);});
+
+let blinkTimer=null,canBlink=true,curExpr='happy',curTilt=0;
+function blink(){ if(!canBlink)return; ['eyeL','eyeR'].forEach(id=>$(id).animate([{transform:'scaleY(1)'},{transform:'scaleY(0.08)'},{transform:'scaleY(1)'}],{duration:160,easing:'ease-in-out'})); }
+function scheduleBlink(){ clearTimeout(blinkTimer); blinkTimer=setTimeout(()=>{blink();scheduleBlink();},2000+Math.random()*3000); }
+['eyeL','eyeR','earL','earR','headGroup','rabbitScale','armWave'].forEach(id=>{$(id).style.transformBox='fill-box';});
+$('eyeL').style.transformOrigin='center';$('eyeR').style.transformOrigin='center';$('earL').style.transformOrigin='50% 95%';$('earR').style.transformOrigin='50% 95%';
+$('headGroup').style.transformOrigin='50% 96%';$('rabbitScale').style.transformOrigin='50% 100%';$('armWave').style.transformOrigin='35% 80%';
+function earTwitch(){ const e=Math.random()<.5?'earL':'earR'; $(e).animate([{transform:'rotate(0)'},{transform:'rotate(-7deg)'},{transform:'rotate(0)'}],{duration:380,easing:'ease-in-out'}); }
+setInterval(()=>{if(Math.random()>0.6 && curExpr!=='creepy')earTwitch();},4200);
+const MOUTH={ open:'M364 366 Q400 372 436 366 Q438 416 400 420 Q362 416 364 366 Z', smallOpen:'M376 368 Q400 372 424 368 Q426 398 400 402 Q374 398 376 368 Z', big:'M352 360 Q400 370 448 360 Q452 424 400 432 Q348 424 352 360 Z', closed:'M366 372 Q400 392 434 372', grin:'M300 350 Q400 470 500 350 Q400 408 300 350 Z' };
+function setMouth(name){ const m=$('mouth'); m.setAttribute('d',MOUTH[name]); $('mouthClipPath').setAttribute('d',MOUTH[name]); const closed=(name==='closed'); m.setAttribute('fill',closed?'none':'#b3252b'); $('tongue').style.opacity=(name==='closed'||name==='grin')?'0':'1'; $('teeth').style.opacity=(name==='closed')?'0':'1'; }
+function setBrow(l,r){ $('browL').setAttribute('d',l); $('browR').setAttribute('d',r); }
+function tilt(deg){ curTilt=deg; $('headGroup').style.transform=`rotate(${deg}deg)`; }
+function setExpr(name){ curExpr=name; canBlink=(name!=='creepy'); $('eyeL').style.transform='';$('eyeR').style.transform='';
+  switch(name){
+    case 'happy': setBrow('M322 244 q30 -12 56 -3','M422 241 q30 -10 56 3'); setMouth('open'); tilt(0); break;
+    case 'excited': setBrow('M320 238 q30 -14 58 -4','M422 235 q30 -12 58 4'); setMouth('big'); tilt(0); break;
+    case 'curious': setBrow('M322 246 q30 -8 56 0','M422 230 q30 -16 56 -2'); setMouth('smallOpen'); tilt(-3); break;
+    case 'soft': setBrow('M322 240 q30 -6 56 4','M422 240 q30 -4 56 -4'); setMouth('closed'); tilt(2); break;
+    case 'creepy': setBrow('M322 250 q30 6 56 -4','M422 248 q30 -4 56 6'); setMouth('grin'); tilt(0); break;
+  } }
+let waveAnim=null;
+function wave(on){ if(on){ waveAnim=$('armWave').animate([{transform:'rotate(-7deg)'},{transform:'rotate(16deg)'},{transform:'rotate(-7deg)'}],{duration:720,iterations:Infinity,easing:'ease-in-out'}); } else if(waveAnim){ waveAnim.cancel(); waveAnim=null; $('armWave').style.transform=''; } }
+
+let creeping=false;
+async function creepFlash(headPop){ if(creeping)return; creeping=true;
+  const wasExpr=curExpr,wasTilt=curTilt,wasBlink=canBlink; canBlink=false; killBirds();
+  setMouth('grin'); setBrow('M322 250 q30 6 56 -4','M422 248 q30 -4 56 6');
+  const td=22+Math.random()*10; $('headGroup').style.transition='none'; lowThud(); staticEl.classList.add('heavy'); trackEl.classList.add('fast');
+  $('headGroup').animate([{transform:`rotate(${td}deg) translate(0,0)`},{transform:`rotate(${td-6}deg) translate(7px,-4px)`},{transform:`rotate(${td+8}deg) translate(-6px,3px)`},{transform:`rotate(${td-3}deg) translate(4px,2px)`},{transform:`rotate(${td}deg) translate(0,0)`}],{duration:560,iterations:1,easing:'steps(5)'});
+  $('rabbitScale').animate([{transform:'translate(0,0)'},{transform:'translate(-4px,0)'},{transform:'translate(5px,1px)'},{transform:'translate(0,0)'}],{duration:560,easing:'steps(4)'});
+  tv.classList.add('glitch');
+  if(headPop){ await wait(180); stinger(); $('headGroup').animate([{transform:`rotate(${td}deg) translateY(0)`},{transform:`rotate(62deg) translate(36px,84px)`},{transform:`rotate(40deg) translate(20px,120px)`},{transform:`rotate(${td}deg) translateY(0)`}],{duration:520,iterations:1,easing:'steps(3)'}); await wait(520); } else { await wait(560); }
+  tv.classList.remove('glitch'); staticEl.classList.remove('heavy'); trackEl.classList.remove('fast'); $('headGroup').style.transition='';
+  setExpr(wasExpr); tilt(wasTilt); canBlink=wasBlink; creeping=false; }
+
+let scene='forest', envLevel=0;
+const SCENES={ forest:{sat:1.15,bri:1.0,con:1.05,hue:0,fog:false}, deep:{sat:.78,bri:.66,con:1.2,hue:8,fog:true}, burrow:{sat:.9,bri:.72,con:1.12,hue:22,fog:false}, door:{sat:.5,bri:.5,con:1.3,hue:210,fog:true} };
+function setOp(id,o,dur=900){ $(id).animate([{opacity:getComputedStyle($(id)).opacity},{opacity:o}],{duration:dur,fill:'forwards',easing:'ease'}); }
+function showEls(ids,show){ ids.forEach(id=>{ $(id).style.display=show?'':'none'; }); }
+function applyEnv(){ const S=SCENES[scene];
+  const bri=Math.max(S.bri-envLevel*0.12,0.3),sat=Math.max(S.sat-envLevel*0.2,0.2),con=S.con+envLevel*0.08,hue=S.hue+envLevel*5;
+  picture.style.filter=`saturate(${sat}) contrast(${con}) brightness(${bri}) hue-rotate(${hue}deg)`;
+  const outdoor=(scene!=='burrow');
+  setOp('fog', outdoor&&(S.fog||envLevel>0)?Math.min((envLevel+(S.fog?1:0))/3,1):0);
+  setOp('watchEyes', outdoor&&(envLevel>=2||scene==='door')?1:0);
+  setOp('dusk', (scene==='forest')?Math.min(envLevel/4,1)*0.6:0);
+  setOp('moon', scene==='deep'?0.7:0);
+  setOp('sun', scene==='forest'&&envLevel===0?1:0.0);
+  vig.classList.toggle('tight',envLevel>=2||scene==='door');
+  if(envLevel>=1)killBirds(); else if(scene==='forest')startBirds(); }
+async function worsen(){ envLevel=Math.min(envLevel+1,4); applyEnv(); glitch(120); await wait(160); }
+async function restoreEnv(){ envLevel=0; applyEnv(); await wait(160); }
+const PLACE={forest:'— 森 林 入 口 —',clearing:'— 林 间 空 地 —',deep:'— 森 林 深 处 —',burrow:'— 兔 子 先 生 的 家 —',door:'— 门　后 —'};
+function showPlace(key){ placeEl.textContent=PLACE[key]||''; placeEl.classList.add('show'); setTimeout(()=>placeEl.classList.remove('show'),2600); }
+async function sceneCut(bgId,sc,placeKey){ staticEl.classList.add('heavy'); trackEl.classList.add('fast'); glitch(200); blip(120); await wait(460);
+  ['bgForest','bgDeep','bgBurrow','bgDoor'].forEach(id=>$(id).style.display=(id===bgId)?'':'none');
+  scene=sc; envLevel=0; applyEnv(); $('moon').setAttribute('r', sc==='deep'?'40':'0');
+  staticEl.classList.remove('heavy'); trackEl.classList.remove('fast'); if(placeKey)showPlace(placeKey); await wait(260); }
+
+function glitch(ms=150){ tv.classList.add('glitch'); staticEl.classList.add('heavy'); trackEl.classList.add('fast'); setTimeout(()=>{tv.classList.remove('glitch');staticEl.classList.remove('heavy');trackEl.classList.remove('fast');},ms); }
+let stampSecs=0;
+function fmtStamp(){ const h=String(Math.floor(stampSecs/3600)).padStart(2,'0'),m=String(Math.floor(stampSecs%3600/60)).padStart(2,'0'),s=String(stampSecs%60).padStart(2,'0'); return `森林频道　2013-08-??　${h}:${m}:${s}`; }
+function startStamp(){ setInterval(()=>{ stampSecs++; stampEl.textContent=fmtStamp(); if(Math.random()<0.05) stampGlitchAboveCaption(); },1000); }
+function stampGlitchAboveCaption(){ stampGhost.textContent=fmtStamp(); const cr=caption.classList.contains('show'); stampGhost.style.left='50%'; stampGhost.style.transform='translateX(-50%)'; stampGhost.style.bottom=cr?'calc(13% + 8vmin)':'60%'; stampGhost.style.display='block'; stampGhost.style.opacity='0.9'; glitch(90); setTimeout(()=>{ stampGhost.style.opacity='0'; setTimeout(()=>stampGhost.style.display='none',200); },520); }
+
+async function sub(word){ flash.textContent=word; flash.classList.add('on'); blip(120); await wait(78); flash.classList.remove('on'); await wait(40); }
+function showCaption(html){ caption.innerHTML=html; caption.classList.add('show'); }
+function hideCaption(){ caption.classList.remove('show'); }
+let talkT=false;
+async function say(text,{expr=null,pitch=440,sp=46}={}){ if(expr)setExpr(expr); const tag='<span class="name">兔子先生：</span>'; let acc=''; showCaption(tag);
+  for(let i=0;i<text.length;i++){ const ch=text[i]; acc+=ch; caption.innerHTML=tag+acc;
+    if(ch!==' '&&ch!=='\n'){ talkT=!talkT; if(curExpr!=='creepy') setMouth(talkT?'big':'open'); if(i%2===0)blip(pitch); }
+    await wait(sp+(/[，。！？…、,.!?~～—]/.test(ch)?200:0)); }
+  if(curExpr!=='creepy') setExpr(curExpr); }
+
+function askChoice(options){ return new Promise(res=>{ ansrow.innerHTML=''; answer.classList.add('show');
+  options.forEach(o=>{ const b=document.createElement('button'); b.className='btn '+(o.cls||'')+(o.disabled?' locked':''); b.textContent=o.label; if(o.disabled)b.disabled=true;
+    b.onclick=()=>{ if(o.disabled)return; blip(660); answer.classList.remove('show'); res(o.value); }; ansrow.appendChild(b); }); }); }
+function askText(ph='打出你的答案…'){ return new Promise(res=>{ ansrow.innerHTML=''; answer.classList.add('show');
+  const inp=document.createElement('input'); inp.id='ansInput'; inp.placeholder=ph; inp.autocomplete='off'; const b=document.createElement('button'); b.className='btn'; b.textContent='告诉兔子先生 ▶';
+  const go=()=>{ const v=(inp.value||'').trim(); if(!v)return; blip(660); answer.classList.remove('show'); res(v); }; b.onclick=go; inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();}); ansrow.appendChild(inp); ansrow.appendChild(b); setTimeout(()=>inp.focus(),50); }); }
+const numHit=(s,re)=>re.test(s);
+
+function bobInPlace(e){ const tr=e.getAttribute('transform')||''; const m=tr.match(/translate\(\s*(-?\d+\.?\d*)[ ,]+(-?\d+\.?\d*)\s*\)/);
+  if(m){ const x=+m[1],y=+m[2]; return e.animate([{transform:`translate(${x}px,${y}px)`},{transform:`translate(${x}px,${y-9}px)`},{transform:`translate(${x}px,${y}px)`}],{duration:780+Math.random()*300,iterations:Infinity,easing:'ease-in-out'}); }
+  return e.animate([{opacity:1},{opacity:0.55},{opacity:1}],{duration:850,iterations:Infinity}); }
+function askPick(ids, correctId){ return new Promise(res=>{ const anims=[];
+  const cleanup=()=>{ ids.forEach(id=>{ const e=$(id); e.style.cursor=''; e.onclick=null; }); anims.forEach(a=>{try{a.cancel();}catch(e){}}); };
+  ids.forEach(id=>{ const e=$(id); e.style.cursor='pointer'; anims.push(bobInPlace(e)); e.onclick=()=>{ blip(660); cleanup(); res(id===correctId?'__correct__':id); }; }); }); }
+
+async function quiz({options,correct,praise,wrongLines}){ let n=0,locked=false;
+  while(true){ if(n>=3 && !locked){ locked=true; await say('没关系的……我帮你，把错的答案都拿走了。',{expr:'soft',pitch:300,sp:60}); await say('现在只剩一个能按了。按它吧，乖孩子。',{expr:'soft',pitch:300,sp:62}); }
+    const pick=await askChoice(options.map(o=>({label:o,value:o,disabled:locked&&o!==correct})));
+    if(pick===correct){ await restoreEnv(); setExpr('happy'); await say(praise,{expr:'excited',pitch:470}); return; }
+    n++; await worsen(); if(Math.random()<0.16) await creepFlash(Math.random()<0.22); await say(wrongLines[Math.min(n-1,wrongLines.length-1)],{expr:'soft',pitch:Math.max(300,430-n*26),sp:52}); } }
+
+async function quizPick({ids,correctId,praise,wrongLines}){ let n=0,locked=false;
+  while(true){ if(n>=3 && !locked){ locked=true; await say('我帮你，把不对的，都藏起来了……点那个还亮着的吧。',{expr:'soft',pitch:300,sp:60});
+      ids.filter(i=>i!==correctId).forEach(i=>{ $(i).animate([{opacity:1},{opacity:0.12}],{duration:600,fill:'forwards'}); $(i).style.pointerEvents='none'; }); }
+    const active=locked?[correctId]:ids;
+    const pick=await askPick(active,correctId);
+    if(pick==='__correct__'){ ids.forEach(i=>{ $(i).style.opacity=''; $(i).style.pointerEvents=''; }); await restoreEnv(); setExpr('happy'); await say(praise,{expr:'excited',pitch:470}); return; }
+    n++; await worsen(); if(Math.random()<0.16) await creepFlash(Math.random()<0.22); await say(wrongLines[Math.min(n-1,wrongLines.length-1)],{expr:'soft',pitch:Math.max(300,430-n*26),sp:52}); } }
+
+const MUSH_PITCH={mush1:392,mush2:494,mush3:587,mush4:740};
+function flashItem(id){ const e=$(id); const tr=e.getAttribute('transform')||''; const m=tr.match(/translate\(\s*(-?\d+\.?\d*)[ ,]+(-?\d+\.?\d*)\s*\)/); const x=m?+m[1]:0,y=m?+m[2]:0;
+  return new Promise(res=>{ e.animate([{transform:`translate(${x}px,${y}px) scale(1)`},{transform:`translate(${x}px,${y}px) scale(1.3)`},{transform:`translate(${x}px,${y}px) scale(1)`}],{duration:420,easing:'ease-in-out'}); note(MUSH_PITCH[id]||520,0,.3,0.13,'triangle'); setTimeout(res,440); }); }
+function waitTap(ids){ return new Promise(res=>{ const clean=()=>ids.forEach(id=>{const e=$(id);e.style.cursor='';e.onclick=null;});
+  ids.forEach(id=>{ const e=$(id); e.style.cursor='pointer'; e.onclick=async()=>{ clean(); await flashItem(id); res(id); }; }); }); }
+async function memoryGame(ids,rounds){ let seq=[];
+  for(let r=0;r<rounds;r++){
+    seq.push(ids[Math.floor(Math.random()*ids.length)]);
+    await say(r===0?'看好哦，我按一个，你照着按一次～':'真棒！再来，这次长一点点～',{expr:'curious',pitch:380,sp:46});
+    await wait(380); for(const id of seq){ await flashItem(id); await wait(230); }
+    let i=0;
+    while(i<seq.length){ const pick=await waitTap(ids);
+      if(pick===seq[i]){ i++; }
+      else { i=0; glitch(140); if(Math.random()<0.14) await creepFlash(false); await say('哎呀，按错啦～没关系，看好，再来一次。',{expr:'soft',pitch:340,sp:48}); await wait(250); for(const id of seq){ await flashItem(id); await wait(230);} } }
+    await say('对啦！你真聪明～',{expr:'excited',pitch:470}); await wait(150);
+  } }
+
+let started=false;
+async function run(){ if(started)return; started=true;
+  initAudio(); startStamp(); startCard.classList.add('hidden');
+  staticEl.classList.add('heavy'); await wait(700); staticEl.classList.remove('heavy');
+  setExpr('happy'); scheduleBlink(); startBirds();
+  title.classList.add('show'); jingle(1,false); await wait(2300); title.classList.remove('show'); showPlace('forest');
+
+  wave(true);
+  await say('嗨——小朋友！欢迎回到《兔子先生的森林》！',{expr:'excited',pitch:480});
+  await say('我是兔子先生～今天我带你逛森林，认识好多小动物！',{expr:'happy'});
+  wave(false); setExpr('happy');
+  await say('先来数数，森林口这里有几棵树呀？打出数字告诉我～',{expr:'curious'});
+  let t1=await askText('打个数字…'); let tries=0;
+  while(!numHit(t1,/[6六]/)){ if(numHit(t1,/[7七]/)){ await sub('第七棵'); glitch(130); await say('七棵？……不对哦，只有六棵呀。第七棵……你是不是看见了不该看的？',{expr:'curious'}); break; }
+    tries++; if(tries>=2){ await say('没关系～就当是六棵吧，你已经很努力啦！',{expr:'happy'}); break; }
+    await say('再数一次看看？一棵、两棵……慢慢来～',{expr:'soft'}); t1=await askText('几棵树…'); }
+  if(numHit(t1,/[6六]/)) await say('答对啦！整整六棵～你的眼睛真雪亮！',{expr:'excited',pitch:480});
+
+  showEls(['bird1','bf1','sqF'],true);
+  await say('草地上来了三位小客人～哪一只是小鸟呢？用手指点点它！',{expr:'excited'});
+  await quizPick({ ids:['bird1','bf1','sqF'], correctId:'bird1',
+    praise:'对啦，这是小鸟！旁边那只松鼠和蝴蝶，也一直看着你呢。',
+    wrongLines:['这只不是小鸟哦，再找找看？','它们好像，都不太爱动）','再点一次吧，会飞的那只小鸟。'] });
+  showEls(['bird1','bf1','sqF'],false);
+
+  await sceneCut('bgForest','forest','clearing');
+  showEls(['deer','sqC','fox','owl'],true);
+  await say('走到空地啦～那边那只小鹿，是什么颜色的呀？',{expr:'curious'});
+  await quiz({ options:['棕色','白色','黑黑的'], correct:'棕色',
+    praise:'答对了！棕色的小鹿～它看你看得好认真，多乖呀。',
+    wrongLines:['不是这个颜色哦，再看看？','再选选看吧。天，怎么有点暗了呢。','。。。你到底要选多少次才对？'] });
+  await say('这几只小动物里，有一只……长得不太对劲。你能点出它吗？',{expr:'curious'});
+  await quizPick({ ids:['sqC','fox','owl'], correctId:'fox',
+    praise:'对……就是这只狐狸。嘻嘻嘻。',
+    wrongLines:['这只看起来挺正常的呀，再看看？','再找找……哪一只，让你觉得怪怪的？','再点一次吧，那只眼睛不对的。'] });
+  await say('太阳下山啦。前面有两条小路，你想走哪条进去？',{expr:'curious',pitch:400});
+  const path=await askChoice([{label:'走左边',value:'L'},{label:'走右边',value:'R'}]);
+  await say(path==='L'?'好，走左边～':'好，走右边～',{expr:'soft',sp:52});
+  showEls(['deer','sqC','fox','owl'],false);
+
+  await sceneCut('bgDeep','deep','deep'); stinger();
+  $('mush4').animate([{opacity:1},{opacity:0.55},{opacity:1}],{duration:1600,iterations:Infinity});
+  await say('森林深处，会发光的小蘑菇～我们来玩个记忆游戏吧！',{expr:'curious',pitch:360,sp:50});
+  await memoryGame(['mush1','mush2','mush3','mush4'],3);
+  await say('你的记性，比留下来的那些小朋友，都要好呢。',{expr:'soft',pitch:330,sp:58});
+  await sub('嘻嘻嘻嘻');
+  await say('悄悄问你……你今天，是一个人来的吗？',{expr:'curious',pitch:340,sp:56});
+  const alone=await askChoice([{label:'是的，就我一个',value:'a'},{label:'不是，还有别人',value:'b',cls:'alt'}]);
+  await say(alone==='a'?'……真好。那就没有人，会来打扰我们了。':'哦……还有别人呀。能不能请他们出去一下？我的话，只想说给你一个人听。',{expr:'soft',pitch:320,sp:58});
+
+  await sceneCut('bgBurrow','burrow','burrow'); jingle(0.85,false);
+  await say('到啦！这是兔子先生的家～进来坐呀，要坐下来吗？',{expr:'excited',pitch:420});
+  const sit=await askChoice([{label:'坐下',value:'sit'},{label:'我站着就好',value:'stand',cls:'alt'}]);
+  await say(sit==='sit'?'坐下来，就不想走了，对不对？':'站着也没关系。反正……咳咳。',{expr:'soft',sp:56});
+  await say('看墙上挂满了照片，都是来看我的好朋友。有一个相框是空着的——点出它来～',{expr:'curious',sp:48});
+  await quizPick({ ids:['pf1','pf2','pf3','pf4','pf5','pf6'], correctId:'pf6',
+    praise:'对……就是这个，空着的相框。',
+    wrongLines:['这个里面有小朋友哦，再找找？','不是这个……','再点一次吧，那个一直空着的。'] });
+  await sub('了');
+  await say('这个空着的……是留给你的哦。',{expr:'soft',pitch:320,sp:64});
+  await wait(250); jingle(0.7,true);
+  await say('你愿意留下来挂在墙……我是说，陪着大家吗？',{expr:'curious',pitch:330,sp:60});
+  const stay=await askChoice([{label:'我愿意',value:'yes'},{label:'我不要',value:'no',cls:'alt'}]);
+  if(stay==='no'){ await say('……为什么呀？大家都留下来了。',{expr:'soft',pitch:300,sp:60}); await creepFlash(true); await say('没关系的。',{expr:'happy',pitch:440}); }
+  else { await say('太好了……太好了！',{expr:'excited',pitch:300}); await creepFlash(false); }
+
+  await say('没事的，我会来找你的',{expr:'soft',pitch:330,sp:56});
+  creak(); $('door').animate([{opacity:1},{opacity:0.2}],{duration:1000,fill:'forwards'}); await wait(700);
+  await sceneCut('bgDoor','door','door'); setExpr('curious');
+  await say('你记得开门',{expr:'soft',pitch:320,sp:60});
+  await say('嘻嘻嘻',{expr:'creepy',pitch:250,sp:64});
+  setExpr('creepy');
+  $('rabbitScale').animate([{transform:'scale(1) translateY(0)'},{transform:'scale(3.2) translateY(252px)'}],{duration:520,fill:'forwards',easing:'cubic-bezier(.7,0,.9,.5)'});
+  stinger(); lowThud(); glitch(220); staticEl.classList.add('heavy'); trackEl.classList.add('fast');
+  await wait(560); tapeStop(); await wait(800);
+
+  picture.style.opacity='0'; staticEl.classList.remove('heavy'); trackEl.classList.remove('fast');
+  hideCaption(); answer.classList.remove('show'); placeEl.classList.remove('show');
+  try{localStorage.setItem('mr_rabbit_done','1');}catch(e){}
+  await wait(500); show404();
+}
+function show404(){ try{killBirds();}catch(e){}
+  startCard.classList.add('hidden'); title.classList.remove('show'); caption.classList.remove('show'); answer.classList.remove('show');
+  hud.style.display='none'; stampEl.style.display='none'; placeEl.style.display='none'; muteBtn.style.display='none';
+  picture.style.display='none'; document.querySelectorAll('.crt').forEach(e=>e.style.display='none'); flash.style.display='none';
+  $('win404').classList.add('show'); }
+startCard.addEventListener('click',run);
+try{ if(localStorage.getItem('mr_rabbit_done')==='1') show404(); }catch(e){}
+window.addEventListener('keydown',e=>{ if(e.key==='r'||e.key==='R'){ try{localStorage.removeItem('mr_rabbit_done');}catch(_){} location.reload(); } });
+</script>
+</body>
+</html>

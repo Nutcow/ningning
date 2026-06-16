@@ -52,7 +52,6 @@ if (localStorage.getItem('win10_zhoumu3') === 'true') {
 }
 `;
 
-// Fix theme.js - I made a mistake copying zhoumu2 logic
 const themeFixed = `const userNameEl = document.getElementById('user-name');
 
 if (localStorage.getItem('win10_zhoumu3') === 'true') {
