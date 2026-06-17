@@ -78,6 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
             id: 'm3', authorName: '月月', authorAvatar: 'image/yueyue.jpg',
             text: '再上十年学我才22岁...好痛苦还有那么多要学',
             time: '2020年6月1号 早上11:07', likes: ['宁宁'], 
+            comments: [
+                { name: '宁宁', text: '又不是只有你一个，我也一样..' }
+            ]
         },
         {
             id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
