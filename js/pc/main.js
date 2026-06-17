@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         {
             id: 'm3', authorName: '月月', authorAvatar: 'image/yueyue.jpg',
-            text: '再上十年学我才23岁...好痛苦还有那么多要学',
+            text: '再上十年学我才22岁...好痛苦还有那么多要学',
             time: '2020年6月1号 早上11:07', likes: ['宁宁'], 
         },
         {
