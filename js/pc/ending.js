@@ -147,7 +147,7 @@ function showEndingScreen(type = 1) {
         transition: opacity 3s ease-in-out; user-select: none; white-space: nowrap;
     `;
     titleEl.textContent = type == 3 ? 'True Ending ：我没有忘'
-        : (type == 1 ? 'Bad Ending ：你和我' : 'Good Ending ：无事发生');
+        : (type == 1 ? 'Bad Ending ：你和我' : 'Open Ending ：无事发生');
 
     const scrollWrap = document.createElement('div');
     scrollWrap.style.cssText = `position: absolute; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center;`;
