@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         acceptBtn.onclick = () => {
             if (!isPreloadDone) return;
 
-            const startupSound = new Audio('audio/windows10_sound.wav');
+            const startupSound = new Audio('audio/windows10_sound.mp3');
             startupSound.volume = 0.6;
 
             startupSound.muted = true;

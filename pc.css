@@ -118,6 +118,105 @@ body.pt-ready .desktop { visibility: visible; }
     overflow: hidden;
 }
 
+.z3-video-stage {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    overflow: hidden;
+}
+.z3-complete-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    display: block;
+}
+.z3-video-playgate {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    background: rgba(0,0,0,0.5);
+}
+.z3-video-play-btn {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    border: none;
+    background: #0067c0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.5);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+.z3-video-play-btn:hover {
+    background: #1c86e0;
+    transform: scale(1.05);
+}
+.z3-video-play-btn:active {
+    background: #005a9e;
+    transform: scale(0.97);
+}
+.z3-video-play-icon {
+    width: 0;
+    height: 0;
+    border-top: 13px solid transparent;
+    border-bottom: 13px solid transparent;
+    border-left: 22px solid #fff;
+    margin-left: 6px;
+}
+.z3-video-play-hint {
+    color: rgba(255,255,255,0.88);
+    font-size: 13px;
+    letter-spacing: 1px;
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.z3-video-buffering {
+    position: absolute;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.72);
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-family: Consolas, "Microsoft YaHei", monospace;
+    pointer-events: none;
+}
+.z3-video-ended {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 0 15%;
+    font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+}
+.z3-ended-title {
+    font-size: clamp(22px, 3.5vmin, 36px);
+    margin-bottom: 18px;
+}
+.z3-ended-text {
+    color: #cfcfcf;
+    font-size: clamp(12px, 1.6vmin, 15px);
+    line-height: 1.8;
+}
+.z3-ended-code {
+    color: #888;
+    margin-top: 18px;
+    letter-spacing: 0.16em;
+    font-family: Consolas, monospace;
+}
 .explorer-sidebar {
     width: 160px;
     background: #f5f5f5;

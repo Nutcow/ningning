@@ -7,6 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const OFFSET_X = 15;
     const OFFSET_Y = 15;
     const ASSET_PATH_MIGRATIONS = window.WIN10_ASSET_MIGRATIONS || {};
+    const Z3_COMPLETE_VIDEO_SRC = 'videos/zhoumu3-complete.mp4';
+    const Z3_COMPLETE_VIDEO_DONE_KEY = 'win10_z3_complete_video_done';
+    const Z3_COMPLETE_VIDEO_FORCE_FAIL_KEY = 'win10_force_z3_video_fail';
 
     function migrateAssetString(value) {
         if (typeof value !== 'string') return value;
@@ -1366,6 +1369,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             requestAnimationFrame(() => {
                                 if (typeof showGoogleHome === 'function') showGoogleHome();
                             });
+                        }
+                        if (appId === 'videoplayer') {
+                            requestAnimationFrame(() => handleVideoPlayerOpen());
                         }
                     }
                 }
@@ -3092,7 +3098,223 @@ document.addEventListener("DOMContentLoaded", () => {
             try { iframe.contentWindow.postMessage(paused ? 'tuzi-audio-pause' : 'tuzi-audio-resume', '*'); } catch (e) {}
         }
     }
-    window.stopDesktopVideoAudio = () => setVideoIframeAudio(true);
+
+    let z3VideoPreloadStarted = false;
+    let z3VideoEventsBound = false;
+    let z3VideoFallbackTimer = null;
+    let z3VideoFailed = false;
+
+    function getZ3VideoEls() {
+        return {
+            stage: document.getElementById('z3-video-stage'),
+            video: document.getElementById('z3-complete-video'),
+            playGate: document.getElementById('z3-video-playgate'),
+            playButton: document.getElementById('z3-video-play-btn'),
+            buffering: document.getElementById('z3-video-buffering'),
+            ended: document.getElementById('z3-video-ended'),
+            rabbitFrame: document.getElementById('rabbit-video-frame')
+        };
+    }
+
+    function isVideoPlayerVisible() {
+        const win = document.getElementById('win-videoplayer');
+        return !!(win && win.style.display !== 'none');
+    }
+
+    function shouldForceZ3VideoFail() {
+        const params = new URLSearchParams(window.location.search);
+        return localStorage.getItem(Z3_COMPLETE_VIDEO_FORCE_FAIL_KEY) === 'true' || params.get('forceZ3VideoFail') === '1';
+    }
+
+    function setZ3VideoMode(mode) {
+        const els = getZ3VideoEls();
+        if (!els.stage || !els.video || !els.rabbitFrame) return;
+
+        const z3Mode = mode !== 'rabbit';
+        els.stage.style.display = z3Mode ? 'block' : 'none';
+        els.rabbitFrame.style.display = z3Mode ? 'none' : 'block';
+        els.video.style.display = (mode === 'ready' || mode === 'player') ? 'block' : 'none';
+        if (els.playGate) els.playGate.style.display = mode === 'ready' ? 'flex' : 'none';
+        if (els.buffering) els.buffering.style.display = mode === 'player' ? 'block' : 'none';
+        if (els.ended) els.ended.style.display = mode === 'ended' ? 'flex' : 'none';
+    }
+
+    function ensureZ3VideoSource() {
+        const video = document.getElementById('z3-complete-video');
+        if (!video) return null;
+        if (video.getAttribute('src') !== Z3_COMPLETE_VIDEO_SRC) {
+            video.setAttribute('src', Z3_COMPLETE_VIDEO_SRC);
+            video.load();
+        }
+        return video;
+    }
+
+    function bindZ3VideoEvents() {
+        if (z3VideoEventsBound) return;
+        const video = document.getElementById('z3-complete-video');
+        if (!video) return;
+        z3VideoEventsBound = true;
+
+        video.addEventListener('loadeddata', () => {
+            const buffering = document.getElementById('z3-video-buffering');
+            if (buffering) buffering.style.display = 'none';
+        });
+        video.addEventListener('playing', () => {
+            clearTimeout(z3VideoFallbackTimer); // 视频已开始播放,取消加载超时回退
+            const buffering = document.getElementById('z3-video-buffering');
+            if (buffering) buffering.style.display = 'none';
+        });
+        video.addEventListener('waiting', () => {
+            const buffering = document.getElementById('z3-video-buffering');
+            if (buffering && localStorage.getItem(Z3_COMPLETE_VIDEO_DONE_KEY) !== 'true') buffering.style.display = 'block';
+        });
+        video.addEventListener('ended', () => showZ3VideoEnded(true));
+        video.addEventListener('error', () => {
+            if (isVideoPlayerVisible()) showZ3VideoFallback();
+        });
+    }
+
+    function bindZ3PlayButton() {
+        const button = document.getElementById('z3-video-play-btn');
+        if (!button || button.dataset.bound === 'true') return;
+        button.dataset.bound = 'true';
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            playZ3CompleteVideo();
+        });
+    }
+
+    function preloadZ3CompleteVideo() {
+        if (!isZhoumu3 || z3VideoPreloadStarted || localStorage.getItem(Z3_COMPLETE_VIDEO_DONE_KEY) === 'true') return;
+        z3VideoPreloadStarted = true;
+        bindZ3VideoEvents();
+        bindZ3PlayButton();
+        // 不在页面加载时就整包下载 4.7MB 视频。国内网络不稳定时,一次性 fetch 整个 blob
+        // 是"全有或全无",中途断线就前功尽弃,还会和其它资源抢带宽。
+        // 改为打开"电影和电视"时用 <video src> 边下边播(浏览器原生支持断点续传/渐进播放),
+        // 加载失败或 8 秒仍无法开始播放则回退到 tuzi 互动动画,避免卡关。
+    }
+
+    function pauseZ3CompleteVideo() {
+        clearTimeout(z3VideoFallbackTimer);
+        const video = document.getElementById('z3-complete-video');
+        if (video) {
+            try { video.pause(); } catch (e) {}
+        }
+    }
+
+    function showZ3VideoEnded(markDone) {
+        clearTimeout(z3VideoFallbackTimer);
+        if (markDone) {
+            try { localStorage.setItem(Z3_COMPLETE_VIDEO_DONE_KEY, 'true'); } catch (e) {}
+        }
+        const video = document.getElementById('z3-complete-video');
+        if (video) {
+            try { video.pause(); } catch (e) {}
+            video.dataset.playStarted = 'true';
+        }
+        setZ3VideoMode('ended');
+    }
+
+    function showZ3VideoFallback() {
+        clearTimeout(z3VideoFallbackTimer);
+        z3VideoFailed = true;
+        const video = document.getElementById('z3-complete-video');
+        if (video) {
+            try { video.pause(); } catch (e) {}
+        }
+        // 视频加载/播放失败(常见于国内玩家无法访问 GitHub 上托管的视频),
+        // 直接切到 tuzi.html 的互动动画,避免卡关。
+        setZ3VideoMode('rabbit');
+        setVideoIframeAudio(false);
+    }
+
+    function prepareZ3CompleteVideo() {
+        setVideoIframeAudio(true);
+        preloadZ3CompleteVideo();
+
+        if (localStorage.getItem(Z3_COMPLETE_VIDEO_DONE_KEY) === 'true') {
+            showZ3VideoEnded(false);
+            return;
+        }
+
+        // 本次会话里视频已确认无法加载,再次打开直接进入 tuzi 互动动画
+        if (z3VideoFailed) {
+            showZ3VideoFallback();
+            return;
+        }
+
+        const video = ensureZ3VideoSource();
+        if (!video) {
+            showZ3VideoFallback();
+            return;
+        }
+
+        bindZ3VideoEvents();
+        bindZ3PlayButton();
+        setZ3VideoMode('ready');
+    }
+
+    function playZ3CompleteVideo() {
+        if (localStorage.getItem(Z3_COMPLETE_VIDEO_DONE_KEY) === 'true') {
+            showZ3VideoEnded(false);
+            return;
+        }
+
+        if (shouldForceZ3VideoFail()) {
+            showZ3VideoFallback();
+            return;
+        }
+
+        const video = ensureZ3VideoSource();
+        if (!video) {
+            showZ3VideoFallback();
+            return;
+        }
+
+        bindZ3VideoEvents();
+        setZ3VideoMode('player');
+        if (video.dataset.playStarted !== 'true') {
+            try { video.currentTime = 0; } catch (e) {}
+            video.dataset.playStarted = 'true';
+        }
+
+        const canPlayMp4 = !video.canPlayType || video.canPlayType('video/mp4') || video.canPlayType('video/mp4; codecs="avc1.42C01F, mp4a.40.2"');
+        if (!canPlayMp4) {
+            showZ3VideoFallback();
+            return;
+        }
+
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => showZ3VideoFallback());
+        }
+
+        // 看门狗:若视频在若干秒内仍无法真正开始播放(国内网络加载很慢/被墙),
+        // 回退到 tuzi 互动动画,避免玩家卡在缓冲画面。'playing' 事件会清掉这个定时器。
+        clearTimeout(z3VideoFallbackTimer);
+        z3VideoFallbackTimer = setTimeout(() => {
+            if (isVideoPlayerVisible() && video.currentTime === 0) {
+                showZ3VideoFallback();
+            }
+        }, 8000);
+    }
+
+    function handleVideoPlayerOpen() {
+        if (isZhoumu3) prepareZ3CompleteVideo();
+        else {
+            setZ3VideoMode('rabbit');
+            setVideoIframeAudio(false);
+        }
+    }
+
+    function pauseVideoPlayer() {
+        pauseZ3CompleteVideo();
+        setVideoIframeAudio(true);
+    }
+
+    preloadZ3CompleteVideo();
+    window.stopDesktopVideoAudio = pauseVideoPlayer;
 
     function openApp(appId) {
         const win = document.getElementById(`win-${appId}`);
@@ -3108,7 +3330,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         bringToFront(appId); saveWindowsState();
 
-        if (appId === 'videoplayer') setVideoIframeAudio(false);
+        if (appId === 'videoplayer') handleVideoPlayerOpen();
 
         if (appId === 'cmd' && cmdInput) {
             cmdInput.focus();
@@ -3148,7 +3370,7 @@ document.addEventListener("DOMContentLoaded", () => {
         windowsState[appId].isMinimized = true;
         const win = document.getElementById(`win-${appId}`);
         if(win) win.style.display = "none";
-        if (appId === 'videoplayer') setVideoIframeAudio(true);
+        if (appId === 'videoplayer') pauseVideoPlayer();
         const taskItem = document.getElementById(`task-${appId}`); if(taskItem) taskItem.classList.remove('active');
         saveWindowsState();
     }
@@ -3160,7 +3382,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(win) {
             win.style.display = "none"; win.classList.remove('maximized'); win.querySelector('.btn-max').innerText = "▢";
         }
-        if (appId === 'videoplayer') setVideoIframeAudio(true);
+        if (appId === 'videoplayer') pauseVideoPlayer();
         const taskItem = document.getElementById(`task-${appId}`); if (taskItem) taskItem.remove();
         saveWindowsState();
         if(appId === 'notepad') currentEditingFile = null;
@@ -3201,7 +3423,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         item.onclick = () => {
             const state = windowsState[appId]; const win = document.getElementById(`win-${appId}`);
-            if (state.isMinimized) { state.isMinimized = false; win.style.display = "flex"; bringToFront(appId); saveWindowsState(); }
+            if (state.isMinimized) {
+                state.isMinimized = false;
+                win.style.display = "flex";
+                bringToFront(appId);
+                if (appId === 'videoplayer') handleVideoPlayerOpen();
+                saveWindowsState();
+            }
             else if (win.style.zIndex == zIndexCounter) minimizeApp(appId);
             else bringToFront(appId);
         };
@@ -3390,15 +3618,9 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         } else {
             statusText.innerText = '正在等待对方接受邀请...';
-            currentCallAudio = new Audio('audio/windows-10-notify-system-sound.mp3');
-            currentCallAudio.loop = true;
-            currentCallAudio.play().catch(e => console.log('铃声播放失败:', e));
+            currentCallAudio = null;
 
             callPhaseTimeout1 = setTimeout(() => {
-                if (currentCallAudio) {
-                    currentCallAudio.pause();
-                    currentCallAudio = null;
-                }
                 statusText.innerText = '对方无应答';
                 callPhaseTimeout2 = setTimeout(() => {
                     endWeChatCall("对方无应答");

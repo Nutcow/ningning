@@ -49,7 +49,7 @@ window.LOCK_ASSETS_TO_LOAD = [
     'hands/s0.webp', 'hands/s1.webp', 'hands/s2.webp',
 
     // 音效一并预加载,避免游戏中首次播放时的延迟
-    'audio/message.wav', 'audio/morse.wav', 'audio/windowsError.mp3',
+    'audio/message.mp3', 'audio/morse.wav', 'audio/windowsError.mp3',
     'audio/windows-10-foreground-earrape.mp3', 'audio/windows-10-bsod-sound.mp3',
-    'audio/windows-10-notify-system-sound.mp3', 'audio/windows10_sound.wav',
+    'audio/windows10_sound.mp3',
 ];
