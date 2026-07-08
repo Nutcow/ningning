@@ -6,15 +6,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const isZ2 = localStorage.getItem('win10_zhoumu2') === 'true';
     const isZ3 = localStorage.getItem('win10_zhoumu3') === 'true';
     const isFirstBootDone = localStorage.getItem('win10_first_boot_done') === 'true';
+    const assetsToLoad = window.LOCK_ASSETS_TO_LOAD || [];
+
+    function preloadAsset(src) {
+        if (!src) return;
+        if (src.endsWith('.wav') || src.endsWith('.mp3')) {
+            const audio = new Audio();
+            audio.preload = 'auto';
+            audio.src = src;
+            try { audio.load(); } catch (e) {}
+        } else {
+            const img = new Image();
+            img.src = src;
+        }
+    }
+
+    function preloadAssetsInBackground() {
+        assetsToLoad.forEach(src => preloadAsset(src));
+    }
 
     if (isZ2 || isZ3 || isFirstBootDone) {
         if (oobeScreen) oobeScreen.style.display = 'none';
         if (bootScreen) bootScreen.style.display = 'none';
+        preloadAssetsInBackground();
         return;
     }
     if (oobeScreen) oobeScreen.style.display = 'flex';
 
-    const assetsToLoad = window.LOCK_ASSETS_TO_LOAD || [];
     const totalAssets = assetsToLoad.length;
 
     let loadedCount = 0;

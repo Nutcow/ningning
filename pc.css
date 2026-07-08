@@ -1,6 +1,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; user-select: none; }
 body { width: 100vw; height: 100vh; overflow: hidden; background-color: #005A9E; background-image: radial-gradient(circle at bottom right, #0078D7, #001A68); display: flex; flex-direction: column; }
-.desktop { flex: 1; position: relative; width: 100%; overflow: hidden; }
+.desktop { flex: 1; position: relative; width: 100%; overflow: hidden; visibility: hidden; }
+/* 桌面在 main.js 按当前周目配置好图标/窗口后才显示,避免刷新时闪出上一周目的残影 */
+body.pt-ready .desktop { visibility: visible; }
 
 .desktop-icon { position: absolute; width: 76px; height: 86px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 5px; cursor: default; border: 1px solid transparent; z-index: 1; }
 .desktop-icon:hover { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }

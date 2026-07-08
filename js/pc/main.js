@@ -1,33 +1,102 @@
 document.addEventListener("DOMContentLoaded", () => {
-    
+
     let zIndexCounter = 10;
-    
+
     const GRID_W = 80;
     const GRID_H = 100;
     const OFFSET_X = 15;
     const OFFSET_Y = 15;
-    
+    const ASSET_PATH_MIGRATIONS = window.WIN10_ASSET_MIGRATIONS || {};
+
+    function migrateAssetString(value) {
+        if (typeof value !== 'string') return value;
+        return value.replace(/(?:image|xhs|pyq|pt|hands)\/[^"'\\\s,)\]}]+?\.(?:png|jpe?g)/gi, (assetPath) => {
+            return ASSET_PATH_MIGRATIONS[assetPath] || assetPath;
+        });
+    }
+
+    function migrateAssetValue(value) {
+        if (typeof value === 'string') {
+            const migrated = migrateAssetString(value);
+            return { value: migrated, changed: migrated !== value };
+        }
+
+        if (Array.isArray(value)) {
+            let changed = false;
+            const migrated = value.map((item) => {
+                const result = migrateAssetValue(item);
+                changed = changed || result.changed;
+                return result.value;
+            });
+            return { value: changed ? migrated : value, changed };
+        }
+
+        if (value && typeof value === 'object') {
+            let changed = false;
+            const migrated = {};
+            Object.keys(value).forEach((key) => {
+                const result = migrateAssetValue(value[key]);
+                changed = changed || result.changed;
+                migrated[key] = result.value;
+            });
+            return { value: changed ? migrated : value, changed };
+        }
+
+        return { value, changed: false };
+    }
+
+    function migrateStoredAssetPaths() {
+        const hasMigrations = Object.keys(ASSET_PATH_MIGRATIONS).length > 0;
+        if (!hasMigrations) return;
+
+        try {
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('win10_')) keys.push(key);
+            }
+
+            keys.forEach((key) => {
+                const raw = localStorage.getItem(key);
+                if (typeof raw !== 'string' || !raw) return;
+
+                try {
+                    const parsed = JSON.parse(raw);
+                    const result = migrateAssetValue(parsed);
+                    if (result.changed) localStorage.setItem(key, JSON.stringify(result.value));
+                } catch (err) {
+                    const migrated = migrateAssetString(raw);
+                    if (migrated !== raw) localStorage.setItem(key, migrated);
+                }
+            });
+        } catch (err) {
+            console.warn('Asset path migration skipped:', err);
+        }
+    }
+
+    migrateStoredAssetPaths();
+
 
     const appInfo = {
         'pc': { icon: 'image/myPc.png', name: '此电脑' },
         'bin': { icon: 'image/recycleEmpty.png', name: '回收站' },
-        'wechat': { icon: 'image/wechat.png', name: '微信' }, 
+        'wechat': { icon: 'image/wechat.png', name: '微信' },
         'docs': { icon: 'image/folder.png', name: '文档' },
         'pics': { icon: 'image/folder.png', name: '图片' },
-        'secret': { icon: 'image/zipfolder.png', name: '记录日常' }, 
-        'notepad': { icon: 'image/file.png', name: '记事本' }, 
+        'secret': { icon: 'image/zipfolder.png', name: '记录日常' },
+        'notepad': { icon: 'image/file.png', name: '记事本' },
         'photoviewer': { icon: 'image/image.png', name: '照片查看器' },
-        'cmd': { icon: 'image/app.png', name: 'unknown.exe' },
+        'cmd': { icon: 'image/app.webp', name: 'unknown.exe' },
         'search': { icon: 'image/drive.png', name: '本地磁盘 (C:)' },
         'bilibili': { icon: 'image/zilizili.png', name: '小辰 - ZiliZili' },
-        'google': { icon: 'image/google.png', name: 'chrome' },
+        'google': { icon: 'image/google.webp', name: 'chrome' },
         'pdfviewer': { icon: 'image/pdf.png', name: '20200615.pdf' },
         'xhs': { icon: 'image/小红书.png', name: '小红书' },
         'hospitalpdf': { icon: 'image/pdf.png', name: '江建国体检报告.pdf' },
-        'news': { icon: 'image/新闻.png', name: '每日新闻' },
+        'news': { icon: 'image/新闻.webp', name: '每日新闻' },
         'videoplayer': { icon: 'image/video.png', name: '电影和电视' },
-        
-        
+
+
         'cpic1': { icon: 'pt/1.png', name: '你.png' },
         'cpic2': { icon: 'pt/2.png', name: '离.png' },
         'cpic3': { icon: 'pt/3.png', name: '我.png' },
@@ -37,11 +106,149 @@ document.addEventListener("DOMContentLoaded", () => {
         'cpic7': { icon: 'pt/7.png', name: '一.png' },
         'cpic8': { icon: 'pt/8.png', name: '步.png' },
         'cpic9': { icon: 'pt/9.png', name: '呢.png' },
-        'merged_pic': { icon: 'pt/fullpt.jpg', name: '日记.png' }
+        'merged_pic': { icon: 'pt/fullpt.webp', name: '日记.png' }
     };
 
     const isZhoumu3 = localStorage.getItem('win10_zhoumu3') === 'true';
     const isZhoumu2 = localStorage.getItem('win10_zhoumu2') === 'true';
+    const desktopLoopKey = isZhoumu3 ? 'z3' : (isZhoumu2 ? 'z2' : 'z1');
+    const DESKTOP_LAYOUT_VERSION = '2026-07-08-layout-2';
+    const DEFAULT_DESKTOP_LAYOUTS = {
+        z1: {
+            'icon-bin': [0, 0],
+            'icon-pc': [0, 1],
+            'icon-docs': [0, 2],
+            'icon-pics': [0, 3],
+            'icon-wechat': [0, 4],
+            'icon-xhs': [0, 5],
+            'icon-secret': [1, 0],
+            'icon-news': [1, 1],
+            'icon-cmd': [2, 0],
+            'icon-search': [1, 2],
+            'icon-google': [1, 3],
+            'icon-pdfviewer': [1, 4],
+            'icon-hospitalpdf': [2, 4],
+            'icon-videoplayer': [2, 1]
+        },
+        z2: {
+            'icon-bin': [0, 0],
+            'icon-pc': [0, 1],
+            'icon-docs': [0, 2],
+            'icon-pics': [0, 3],
+            'icon-wechat': [0, 4],
+            'icon-xhs': [0, 5],
+            'icon-search': [1, 0],
+            'icon-google': [1, 1],
+            'icon-cmd': [1, 2],
+            'icon-hospitalpdf': [1, 3]
+        },
+        z3: {
+            'icon-bin': [0, 0],
+            'icon-pc': [0, 1],
+            'icon-docs': [0, 2],
+            'icon-pics': [0, 3],
+            'icon-wechat': [0, 4],
+            'icon-xhs': [0, 5],
+            'icon-videoplayer': [1, 0],
+            'icon-pdfviewer': [1, 1],
+            'icon-cmd': [1, 2]
+        }
+    };
+
+    function getGridPoint(col, row) {
+        return { left: col * GRID_W + OFFSET_X, top: row * GRID_H + OFFSET_Y };
+    }
+
+    function normalizeGridPoint(left, top) {
+        const parsedLeft = parseInt(left, 10);
+        const parsedTop = parseInt(top, 10);
+        if (Number.isNaN(parsedLeft) || Number.isNaN(parsedTop)) return null;
+
+        let snapLeft = Math.round((parsedLeft - OFFSET_X) / GRID_W) * GRID_W + OFFSET_X;
+        let snapTop = Math.round((parsedTop - OFFSET_Y) / GRID_H) * GRID_H + OFFSET_Y;
+        const maxLeft = Math.max(OFFSET_X, window.innerWidth - GRID_W);
+        const maxTop = Math.max(OFFSET_Y, window.innerHeight - GRID_H - 40);
+
+        snapLeft = Math.max(OFFSET_X, Math.min(snapLeft, maxLeft));
+        snapTop = Math.max(OFFSET_Y, Math.min(snapTop, maxTop));
+        return { left: snapLeft, top: snapTop };
+    }
+
+    function iconPositionKey(pos) {
+        return `${pos.left},${pos.top}`;
+    }
+
+    function isDesktopIconVisible(icon) {
+        return icon && icon.style.display !== 'none';
+    }
+
+    function setDesktopIconPosition(icon, pos) {
+        icon.style.left = `${pos.left}px`;
+        icon.style.top = `${pos.top}px`;
+    }
+
+    function getDefaultIconPoint(iconId) {
+        const layout = DEFAULT_DESKTOP_LAYOUTS[desktopLoopKey] || {};
+        const cell = layout[iconId];
+        return cell ? getGridPoint(cell[0], cell[1]) : null;
+    }
+
+    function findOpenGridPoint(occupied) {
+        const maxCols = Math.max(0, Math.floor((window.innerWidth - GRID_W) / GRID_W));
+        const maxRows = Math.max(0, Math.floor((window.innerHeight - GRID_H - 40) / GRID_H));
+        for (let c = 0; c <= maxCols; c++) {
+            for (let r = 0; r <= maxRows; r++) {
+                const pos = getGridPoint(c, r);
+                if (!occupied.has(iconPositionKey(pos))) return pos;
+            }
+        }
+        return getGridPoint(0, 0);
+    }
+
+    function loadSavedIconsForCurrentLoop() {
+        const savedLoop = localStorage.getItem('win10_icons_loop');
+        const savedVersion = localStorage.getItem('win10_icons_layout_version');
+        if (savedLoop !== desktopLoopKey || savedVersion !== DESKTOP_LAYOUT_VERSION) {
+            localStorage.removeItem('win10_icons');
+            return null;
+        }
+        try {
+            return JSON.parse(localStorage.getItem('win10_icons')) || null;
+        } catch (e) {
+            localStorage.removeItem('win10_icons');
+            return null;
+        }
+    }
+
+    function applyDesktopLayout() {
+        const savedIcons = loadSavedIconsForCurrentLoop();
+        const visibleIcons = Array.from(document.querySelectorAll('.desktop-icon')).filter(isDesktopIconVisible);
+        const occupied = new Set();
+        const pending = [];
+
+        visibleIcons.forEach(icon => {
+            let pos = null;
+            if (savedIcons && savedIcons[icon.id]) {
+                pos = normalizeGridPoint(savedIcons[icon.id].left, savedIcons[icon.id].top);
+            }
+            if (!pos) pos = getDefaultIconPoint(icon.id);
+
+            if (pos && !occupied.has(iconPositionKey(pos))) {
+                setDesktopIconPosition(icon, pos);
+                occupied.add(iconPositionKey(pos));
+            } else {
+                pending.push(icon);
+            }
+        });
+
+        pending.forEach(icon => {
+            const pos = findOpenGridPoint(occupied);
+            setDesktopIconPosition(icon, pos);
+            occupied.add(iconPositionKey(pos));
+        });
+
+        saveIconsPosition();
+    }
 
     if (isZhoumu2 || isZhoumu3) {
         appInfo['docs'].name = '日记';
@@ -52,10 +259,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const zhoumu1Moments = [
         {
-            id: 'm1', authorName: '妈妈', authorAvatar: 'image/mama.png',
+            id: 'm1', authorName: '妈妈', authorAvatar: 'image/mama.webp',
             text: '给两个宝贝包了三鲜馅水饺',
-            images: ['pyq/pyq1.png'],
-            time: '2020年6月2号 早上9:12', likes: ['哥哥', '宁宁'], 
+            images: ['pyq/pyq1.webp'],
+            time: '2020年6月2号 早上9:12', likes: ['哥哥', '宁宁'],
             comments: [
                 { name: '宁宁', text: '妈妈包的真好吃！' }
             ]
@@ -70,50 +277,50 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         {
-            id: 'm2', authorName: '妈妈', authorAvatar: 'image/mama.png',
+            id: 'm2', authorName: '妈妈', authorAvatar: 'image/mama.webp',
             text: '时间过得真快，一转眼小家伙们都长大了！',
             time: '2020年6月1号 晚上8:09', likes: ['哥哥', '宁宁','爸爸']
         },
         {
-            id: 'm3', authorName: '月月', authorAvatar: 'image/yueyue.jpg',
+            id: 'm3', authorName: '月月', authorAvatar: 'image/yueyue.webp',
             text: '再上十年学我才22岁...好痛苦还有那么多要学',
-            time: '2020年6月1号 早上11:07', likes: ['宁宁'], 
+            time: '2020年6月1号 早上11:07', likes: ['宁宁'],
             comments: [
                 { name: '宁宁', text: '又不是只有你一个，我也一样..' }
             ]
         },
         {
-            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
+            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
             text: '对不起，各位网上的哥哥姐姐，其实我一直在欺骗你们，我假装自己已经是个大人了，但是现在看看自己伪装成熟的样子真的好累，所以我现在说出真相，我其实今年刚上小学，再过几天儿童节了，可以送我礼物么',
-            time: '2020年5月27号 晚上7:12', likes: ['哥哥', '月月', '安沫'], 
+            time: '2020年5月27号 晚上7:12', likes: ['哥哥', '月月', '安沫'],
             comments: [
                 { name: '安沫', text: '可以的' }
             ]
         },
         {
-            id: 'm5', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
+            id: 'm5', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
             text: '我的世界在下雨',
-            time: '2020年5月27号 晚上7:08', likes: ['安沫'], 
+            time: '2020年5月27号 晚上7:08', likes: ['安沫'],
             comments: [
                 { name: '月月', text: '？' }
             ]
         },
         {
-            id: 'm6', authorName: '安沫', authorAvatar: 'image/anmo.jpg',
+            id: 'm6', authorName: '安沫', authorAvatar: 'image/anmo.webp',
             text: 'intp-a',
             images: ['pyq/pyq2.png'],
-            time: '2020年5月25号 晚上10:21', likes: ['宁宁', '月月', '安沫'], 
+            time: '2020年5月25号 晚上10:21', likes: ['宁宁', '月月', '安沫'],
         },
         {
             id: 'm7', authorName: '哥哥', authorAvatar: 'image/gege.jpg',
             text: '还剩一年就步入大学了，时间过得好快啊',
-            time: '2020年5月25号 晚上7:08', likes: ['宁宁'], 
+            time: '2020年5月25号 晚上7:08', likes: ['宁宁'],
             comments: [
                 { name: '宁宁', text: '哥哥加油！' }
             ]
         },
         {
-            id: 'm8', authorName: '爸爸', authorAvatar: 'image/baba.png',
+            id: 'm8', authorName: '爸爸', authorAvatar: 'image/baba.webp',
             text: '回首向来萧瑟处，也无风雨也无晴',
             time: '2020年5月24号 早上6:28', likes: ['宁宁']
         },
@@ -121,81 +328,81 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const zhoumu2Moments = [
         {
-            id: 'm1', authorName: '妈妈', authorAvatar: 'image/mama.png',
+            id: 'm1', authorName: '妈妈', authorAvatar: 'image/mama.webp',
             text: '给宝贝包了三鲜馅水饺',
-            images: ['pyq/pyq1.png'],
-            time: '2020年6月2号 早上9:12', likes: ['宁宁'], 
+            images: ['pyq/pyq1.webp'],
+            time: '2020年6月2号 早上9:12', likes: ['宁宁'],
             comments: [
                 { name: '宁宁', text: '妈妈包的真好吃！' }
             ]
         },
         {
-            id: 'm2', authorName: '妈妈', authorAvatar: 'image/mama.png',
+            id: 'm2', authorName: '妈妈', authorAvatar: 'image/mama.webp',
             text: '时间过得真快，一转眼小家伙们都长大了！',
             time: '2020年6月1号 晚上8:09', likes: ['宁宁','爸爸']
         },
         {
-            id: 'm3', authorName: '月月', authorAvatar: 'image/yueyue.jpg',
+            id: 'm3', authorName: '月月', authorAvatar: 'image/yueyue.webp',
             text: '再上十年学我才23岁...好痛苦还有那么多要学',
-            time: '2020年6月1号 早上11:07', likes: ['宁宁'], 
+            time: '2020年6月1号 早上11:07', likes: ['宁宁'],
         },
         {
-            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
+            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
             text: '对不起，各位网上的哥哥姐姐，其实我一直在欺骗你们，我假装自己已经是个大人了，但是现在看看自己伪装成熟的样子真的好累，所以我现在说出真相，我其实今年刚上小学，再过几天儿童节了，可以送我礼物么',
-            time: '2020年5月27号 晚上7:12', likes: ['月月', '安沫'], 
+            time: '2020年5月27号 晚上7:12', likes: ['月月', '安沫'],
             comments: [
                 { name: '安沫', text: '可以的' }
             ]
         },
         {
-            id: 'm5', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
+            id: 'm5', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
             text: '我的世界在下雨',
-            time: '2020年5月27号 晚上7:08', likes: ['安沫'], 
+            time: '2020年5月27号 晚上7:08', likes: ['安沫'],
             comments: [
                 { name: '月月', text: '？' }
             ]
         },
         {
-            id: 'm6', authorName: '安沫', authorAvatar: 'image/anmo.jpg',
+            id: 'm6', authorName: '安沫', authorAvatar: 'image/anmo.webp',
             text: 'intp-a',
             images: ['pyq/pyq2.png'],
-            time: '2020年5月25号 晚上10:21', likes: ['宁宁', '月月', '安沫'], 
+            time: '2020年5月25号 晚上10:21', likes: ['宁宁', '月月', '安沫'],
         },
         {
-            id: 'm8', authorName: '爸爸', authorAvatar: 'image/baba.png',
+            id: 'm8', authorName: '爸爸', authorAvatar: 'image/baba.webp',
             text: '回首向来萧瑟处，也无风雨也无晴',
-            time: '2020年5月25号 早上6:28', likes: ['宁宁'], 
+            time: '2020年5月25号 早上6:28', likes: ['宁宁'],
         },
     ];
 
     const zhoumu3Moments = [
         {
-            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
-            images: ['hands/s0.png'],
-            time: '2020年5月27号 晚上7:13', likes: [], 
+            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
+            images: ['hands/s0.webp'],
+            time: '2020年5月27号 晚上7:13', likes: [],
             comments: [
                 { name: '安沫', text: '宁宁? 你是不是最近身体不舒服？' },
             ]
         },
         {
-            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
-            images: ['hands/s2.png'],
-            time: '2020年5月27号 晚上7:13', likes: [], 
+            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
+            images: ['hands/s2.webp'],
+            time: '2020年5月27号 晚上7:13', likes: [],
             comments: [
             ]
         },
         {
-            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
-            images: ['hands/s1.png'],
-            time: '2020年5月27号 晚上7:12', likes: [], 
+            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
+            images: ['hands/s1.webp'],
+            time: '2020年5月27号 晚上7:12', likes: [],
             comments: [
                 { name: '安沫', text: '宁宁？' },
             ]
         },
         {
-            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.jpg',
-            images: ['hands/s1.png'],
-            time: '2020年5月27号 晚上7:12', likes: [], 
+            id: 'm4', authorName: '宁宁', authorAvatar: 'image/ningning.webp',
+            images: ['hands/s1.webp'],
+            time: '2020年5月27号 晚上7:12', likes: [],
             comments: [
                 { name: '安沫', text: '宁宁？' },
                 { name: '月月', text: '?' },
@@ -205,11 +412,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentMoments = isZhoumu3 ? zhoumu3Moments : (isZhoumu2 ? zhoumu2Moments : zhoumu1Moments);
 
-    
+
     const originalWechatData = {
-        'family': { 
-            name: '相亲相爱的一家人 (4)', 
-            members: ['me', 'mom', 'dad', 'brother'], 
+        'family': {
+            name: '相亲相爱的一家人 (4)',
+            members: ['me', 'mom', 'dad', 'brother'],
             messages: [
                 { time: '2020年6月3日 08:12', text: '哥哥和宁宁', sender: '妈妈', isMine: false , type: 'redpacket'},
                 { time: '', text: '哥哥这几天照顾好宁宁，妈妈和爸爸有事会不在家', sender: '妈妈', isMine: false },
@@ -235,15 +442,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '就你爹宠你俩 🤭', sender: '妈妈', isMine: false },
                 { time: '', text: '好哎！', sender: '宁宁', isMine: true},
                 { time: '', text: '爱你爸爸妈妈', sender: '宁宁', isMine: true}
-            ] 
+            ]
         },
-        'me': { name: '宁宁', avatar: 'image/ningning.jpg', hidden: true },
-        'mom': { 
-            name: '妈妈', avatar: 'image/mama.png', 
+        'me': { name: '宁宁', avatar: 'image/ningning.webp', hidden: true },
+        'mom': {
+            name: '妈妈', avatar: 'image/mama.webp',
             messages: [
                 { time: '2020年5月28日 17:21', text: '妈妈，今天姥姥带曲奇去理发了哎', sender: '宁宁', isMine: true},
                 { time: '', text: '曲奇好可爱，可以带它来我们家玩两天吗？', sender: '宁宁', isMine: true},
-                { time: '',content: 'image/dog.png', sender: '宁宁', isMine: true,type: 'img' },
+                { time: '',content: 'image/dog.webp', sender: '宁宁', isMine: true,type: 'img' },
                 { time: '2020年5月28日 17:36', text: '可以呀宝贝，但是你可以照顾好小曲奇吗？', isMine: false },
                 { time: '', text: '可以可以！曲奇好乖！', sender: '宁宁', isMine: true},
                 { time: '', text: '超级听话，我给它吃了很多小零食！', sender: '宁宁', isMine: true},
@@ -262,10 +469,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '这是什么话？你永远都是妈妈心里的宝贝', isMine: false },
                 { time: '', text: '那哥哥呢...', sender: '宁宁', isMine: true},
                 { time: '', text: '哥哥和你都是妈妈爸爸的宝贝', isMine: false },
-            ] 
+            ]
         },
-        'dad': { 
-            name: '爸爸', avatar: 'image/baba.png', 
+        'dad': {
+            name: '爸爸', avatar: 'image/baba.webp',
             messages: [
                 { time: '2020年6月2日 11:26', text: '宁宁，缺零用钱跟老爸说，别老让你哥花钱', isMine: false },
                 { time: '', text: '零花钱', isMine: false, type: 'redpacket' },
@@ -284,10 +491,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '你这孩子', isMine: false },
                 { time: '', text: '给你买个草莓味的', isMine: false },
                 { time: '', text: '太好啦！', sender: '宁宁', isMine: true},
-            ] 
+            ]
         },
-        'brother': { 
-            name: '哥哥', avatar: 'image/gege.jpg', 
+        'brother': {
+            name: '哥哥', avatar: 'image/gege.jpg',
             messages: [
                 { time: '2020年5月18日 18:02', text: '宁宁你今晚要吃什么', isMine: false },
                 { time: '2020年5月18日 18:03', text: '我不饿', isMine: true },
@@ -319,7 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '？', sender: '宁宁', isMine: true},
                 { time: '', text: '也没有吧',  sender: '宁宁', isMine: true},
                 { time: '', text: '嘻嘻',  sender: '宁宁', isMine: true},
-                { time: '2020年6月3日 18:29',content: 'image/兔子.png', isMine: false,type: 'img' },
+                { time: '2020年6月3日 18:29',content: 'image/兔子.webp', isMine: false,type: 'img' },
                 { time: '', text: '是这个吗？',  isMine: false},
                 { time: '', text: '幸亏买的快，不然就没了',  isMine: false},
                 { time: '2020年6月3日 18:31', text: '对对对！！谢谢哥哥！！！！',  sender: '宁宁', isMine: true},
@@ -331,10 +538,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '家钥匙我就带着了', isMine: false},
                 { time: '', text: '你一个人在家早点睡', isMine: false},
                 { time: '2020年6月14日 19:36', text: '知道啦', sender: '宁宁', isMine: true},
-            ] 
+            ]
         },
-        'yueyue': { 
-            name: '月月', avatar: 'image/yueyue.jpg', 
+        'yueyue': {
+            name: '月月', avatar: 'image/yueyue.webp',
             messages: [
                 { time: '2020年6月4日 08:12', text: '月月，你猜猜看我哥哥给我买了什么？',  sender: '宁宁', isMine: true },
                 { time: '2020年6月4日 08:16', text: '什么东西神神秘秘的呀', isMine: false},
@@ -370,9 +577,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '加上你的岁数呀', isMine: false},
                 { time: '2020年6月13日 12:05', text: '坏蛋来的', isMine: true},
                 { time: '', text: '嘻嘻嘻', isMine: false},
-            ] 
+            ]
         },
-        'anmo': { name: '安沫', avatar: 'image/anmo.jpg', messages: [
+        'anmo': { name: '安沫', avatar: 'image/anmo.webp', messages: [
                 { time: '2020年6月2日 10:26', text: '宁宁，下周你有空吗？',  isMine: false },
                 { time: '2020年6月2日 10:27', text: '怎么了呀 安沫？', isMine: true},
                 { time: '', text: '找你玩羽毛球呗',  isMine: false },
@@ -393,13 +600,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '算了吧，从我家到我姥姥家得2小时路程', isMine: true},
                 { time: '', text: '要不下次我们叫上月月一起玩？', isMine: true},
                 { time: '', text: '好呀', isMine: false},
-            ] 
+            ]
         },
         'wechatfile': { name: '文件传输', avatar: 'image/wechatfile.jpeg', messages: [
                 { time: '2020年5月29日 21:18', text: 'https://space.bilibili.com/3546600750188698?spm_id_from=333.1007.0.0', isMine: true },
                 { time: '', text: '我已经分享了这个链接，参与了抽奖，你也能参与！只要点击链接就能参与活动！', isMine: true },
             ] }
-        
+
     };
 
    const zhoumu2WechatData = {
@@ -433,11 +640,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '妈妈等会就回家，宁宁你早点睡吧', sender: '妈妈', isMine: false },
                 { time: '2020年6月14日 19:38', text: '好的妈妈', sender: '宁宁',isMine: true},
         ] },
-        'me': { name: '宁宁', avatar: 'image/ningning.jpg', hidden: true },
-        'mom': { name: '妈妈', avatar: 'image/mama.png', messages: [
+        'me': { name: '宁宁', avatar: 'image/ningning.webp', hidden: true },
+        'mom': { name: '妈妈', avatar: 'image/mama.webp', messages: [
                 { time: '2020年5月28日 17:21', text: '妈妈，今天姥姥带曲奇去理发了哎', sender: '宁宁', isMine: true},
                 { time: '', text: '曲奇好可爱，可以带它来我们家玩两天吗？', sender: '宁宁', isMine: true},
-                { time: '',content: 'image/dog.png', sender: '宁宁', isMine: true,type: 'img' },
+                { time: '',content: 'image/dog.webp', sender: '宁宁', isMine: true,type: 'img' },
                 { time: '2020年5月28日 17:36', text: '可以呀宝贝，但是你可以照顾好小曲奇吗？', isMine: false },
                 { time: '', text: '可以可以！曲奇好乖！', sender: '宁宁', isMine: true},
                 { time: '', text: '超级听话，我给它吃了很多小零食！', sender: '宁宁', isMine: true},
@@ -460,7 +667,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '',content: 'image/emoji2.jpg', sender: '宁宁', isMine: true,type: 'img' },
                 { time: '', text: '好吧，爱你宝贝', isMine: false },
         ] },
-        'dad': { name: '爸爸', avatar: 'image/baba.png', messages: [
+        'dad': { name: '爸爸', avatar: 'image/baba.webp', messages: [
                 { time: '2020年6月2日 11:26', text: '宁宁，缺零用钱跟老爸说，别老让你妈花钱', isMine: false },
                 { time: '', text: '零花钱', isMine: false, type: 'redpacket' },
                 { time: '', text: '谢谢爸爸！我知道啦', sender: '宁宁', isMine: true},
@@ -481,7 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ] },
         'brother': { name: '用户不存在', avatar: 'image/user2.jpg', messages: [
         ] },
-        'yueyue': { name: '月月', avatar: 'image/yueyue.jpg', messages: [
+        'yueyue': { name: '月月', avatar: 'image/yueyue.webp', messages: [
                 { time: '2020年6月4日 08:12', text: '月月，你猜猜我爸给我买了什么？',  sender: '宁宁', isMine: true },
                 { time: '2020年6月4日 08:16', text: '什么东西', isMine: false},
                 { time: '', text: '神神秘秘的呀', isMine: false},
@@ -491,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '也不是',  sender: '宁宁', isMine: true },
                 { time: '', text: '那会是什么？猜不到', isMine: false},
                 { time: '', text: '嘻嘻，没啥',  sender: '宁宁', isMine: true },
-                { time: '',content: 'image/mianmian.png', sender: '宁宁', isMine: true,type: 'img' },
+                { time: '',content: 'image/mianmian.webp', sender: '宁宁', isMine: true,type: 'img' },
                 { time: '', text: '我去！', isMine: false },
                 { time: '', text: '好可爱啊', isMine: false },
                 { time: '',content: 'image/emoji11.jpg', isMine: false,type: 'img' },
@@ -542,12 +749,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '2020年6月14日 21:42', text: '月月我今晚一个人在家', sender: '宁宁',isMine: true},
                 { time: '', text: '有点不敢睡觉，屋外有吱吱喳喳的声音', sender: '宁宁',isMine: true},
                 { time: '', text: '像有人说话在说话', sender: '宁宁',isMine: true},
-                { time: '',content: 'image/睡觉.png', isMine: true,type: 'img' },
+                { time: '',content: 'image/睡觉.webp', isMine: true,type: 'img' },
                 { time: '2020年6月14日 21:44', text: '嗯？', isMine: false},
                 { time: '2020年6月14日 21:44', text: '是虫子吧？', isMine: false},
                 { time: '', text: '没事的我在这里陪你', isMine: false},
         ] },
-        'anmo': { name: '安沫', avatar: 'image/anmo.jpg', messages: [
+        'anmo': { name: '安沫', avatar: 'image/anmo.webp', messages: [
                 { time: '2020年6月2日 10:26', text: '宁宁，下周你有空吗？',  isMine: false },
                 { time: '2020年6月2日 10:27', text: '怎么了呀 安沫？', isMine: true},
                 { time: '', text: '找你玩羽毛球呗',  isMine: false },
@@ -585,11 +792,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const zhoumu3WechatData = {
         'family': { name: '相亲相爱的一家人 (3)', members: ['me'],hidden: true,messages: [
         ] },
-        'me': { name: '若宁', avatar: 'image/ningning.jpg', hidden: true },
+        'me': { name: '若宁', avatar: 'image/ningning.webp', hidden: true },
         'mom': { name: '用户不存在', avatar: 'image/user2.jpg',hidden: true, messages: [] },
         'dad': { name: '用户不存在', avatar: 'image/user2.jpg', hidden: true, messages: [] },
         'brother': { name: '用户不存在', avatar: 'image/user2.jpg', hidden: true, messages: [] },
-        'yueyue': { name: '月月', avatar: 'image/yueyue.jpg', messages: [
+        'yueyue': { name: '月月', avatar: 'image/yueyue.webp', messages: [
                 { time: '2020年6月4日 08:12', text: '月月，你猜猜看我姥姥给我买了什么？',  sender: '宁宁', isMine: true },
                 { time: '2020年6月4日 08:16', text: '什么东西神神秘秘的呀', isMine: false},
                 { time: '', text: '新的发夹吗？', isMine: false},
@@ -599,7 +806,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '那会是什么？猜不到', isMine: false},
                 { time: '', text: '嘻嘻，也没啥就是电视里的玩偶罢了',  sender: '宁宁', isMine: true },
                 { time: '', text: '什么玩偶呀？', isMine: false },
-                { time: '',content: 'image/mianmian2.png', sender: '宁宁', isMine: true,type: 'img' },
+                { time: '',content: 'image/mianmian2.webp', sender: '宁宁', isMine: true,type: 'img' },
                 { time: '', text: '我去！', isMine: false },
                 { time: '', text: '好可爱啊', isMine: false },
                 { time: '',content: 'image/emoji11.jpg', isMine: false,type: 'img' },
@@ -629,7 +836,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '但我好像不记得了', sender: '宁宁', isMine: true},
                 { time: '', text: '我总感觉少了点什么', sender: '宁宁', isMine: true},
                 { time: '', text: '别管那么多了，就这样定了！', isMine: false},
-                { time: '2020年6月11日 19:32', content: 'image/bql.png', isMine: false, type: 'img'},
+                { time: '2020年6月11日 19:32', content: 'image/bql.webp', isMine: false, type: 'img'},
                 { time: '', text: '笑死我了，这还是我拍的冰淇淋', isMine: false},
                 { time: '', text: '但我打不开', isMine: false},
                 { time: '', text: '算了啦，以后咱们多拍几张', isMine: false},
@@ -651,7 +858,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { time: '', text: '明天我找你玩！', isMine: false},
                 { time: '', text: '嗯嗯', isMine: true},
         ] },
-        'anmo': { name: '安沫', avatar: 'image/anmo.jpg', messages: [
+        'anmo': { name: '安沫', avatar: 'image/anmo.webp', messages: [
                 { time: '2020年6月2日 10:26', text: '宁宁，下周你有空吗？',  isMine: false },
                 { time: '2020年6月2日 10:27', text: '怎么了呀 安沫？', isMine: true},
                 { time: '', text: '找你玩羽毛球呗',  isMine: false },
@@ -714,14 +921,14 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         wechatData = JSON.parse(localStorage.getItem('win10_wechat_data')) || originalWechatData;
     }
-    
-    let activeWeChatContact = 'family'; 
+
+    let activeWeChatContact = 'family';
 
    if (wechatData[activeWeChatContact] && wechatData[activeWeChatContact].hidden) {
        for (let id in wechatData) {
            if (!wechatData[id].hidden && id !== 'me') {
                activeWeChatContact = id;
-               break; 
+               break;
            }
        }
    }
@@ -778,21 +985,21 @@ document.addEventListener("DOMContentLoaded", () => {
             { id: 'd0', name: '微信.txt', content: '微信密码是：1120', type: 'text' },
         ],
         pics: [
-            { id: 'p1', name: '海滩.png', content: 'image/全家图.png', type: 'img' },
-            { id: 'p2', name: '动物园.png', content: 'image/zoo.png', type: 'img' },
-            { id: 'p3', name: '水族馆.png', content: 'image/水族馆.png', type: 'img' },
-            { id: 'p4', name: '山上.png', content: 'image/山上.png', type: 'img' },
+            { id: 'p1', name: '海滩.png', content: 'image/全家图.webp', type: 'img' },
+            { id: 'p2', name: '动物园.png', content: 'image/zoo.webp', type: 'img' },
+            { id: 'p3', name: '水族馆.png', content: 'image/水族馆.webp', type: 'img' },
+            { id: 'p4', name: '山上.png', content: 'image/山上.webp', type: 'img' },
             { id: 'p5', name: '文字.txt', content: '这些照片是两年前拍的', type: 'text' },
         ],
-        secret: [ 
+        secret: [
             { id: 's0', name: '文字.txt', content: '妈妈周三下午就回来了，比我想的要快很多！妈妈和爸爸给我买了一个小蛋糕！！！超级好吃！！奶油特别绵密，上面摆满了草莓。可惜中间的猕猴桃有点酸，我都挑出来了……我拿到蛋糕后切了一块分享给哥哥，但是感觉他不是那么想吃。他就连自己生日的蛋糕，最后还是我帮忙吃完的……哼，没品的家伙。算了，不和他一般见识。对了，月月明天就要来我家了，我得准备一下房间……', type: 'text' },
             { id: 's1', name: '文字(1).txt', content: '月月周四来我家玩啦！！！我超开心！她爸爸送她来的。哥哥带我们在外面玩了一会儿羽毛球，后来我们一起看了电视，还吃了妈妈之前包的饺子。真好吃！真希望月月能够住在我家一段时间！这样我们就可以一直玩啦！！到了晚餐时间，我妈妈居然同意月月来我家过夜！！！晚上，月月拉着我一起看《兔子先生》，还被妈妈说了……不过我又不是每天都看那么晚嘛！但不管怎么说，起码我能和月月待在一起。', type: 'text' },
             { id: 's1', name: '文字(2).txt', content: '月月一直在我家待到周六才被爸爸妈妈接走。我恳求妈妈让月月再待一会儿，但是被她无情地拒绝了。我好难过……', type: 'text' },
             { id: 's5', name: '文字(3).txt', content: '晚上月月抱着棉棉玩了一会说棉棉的眼睛好神奇好像会跟着人转。其实我早就知道了，我把它放到了客厅。结果第二天早上，它又回到了我的床头……一定是哥哥半夜帮我捡回来的吧。嘻嘻。明天一定要好好谢谢哥哥！', type: 'text' },
-            { id: 's3', name: '兔子玩偶.png', content: 'image/tv.png', type: 'img' },
+            { id: 's3', name: '兔子玩偶.png', content: 'image/tv.webp', type: 'img' },
             { id: 's4', name: 'unknown.exe', content: '', type: 'exe' }
         ],
-        bin: [] 
+        bin: []
     };
 
     const zhoumu2VFS = {
@@ -803,14 +1010,14 @@ document.addEventListener("DOMContentLoaded", () => {
             { id: 'd12', name: '文字(2).txt', content: '月月一直在我家待到周六才被爸爸妈妈接走。我恳求妈妈让月月再待一会儿，但是被她无情地拒绝了。我好难过……', type: 'text' },
             { id: 'd12', name: '文字(3).txt', content: '。。。。。最近几天我感觉自己玩得好累哦 =v=……我真的需要好好休息一下了。。。。。哦，对了，为了防止我忘记，昨天月月走前在我的电脑里放了一个文件。她说什么如果我以后忘记什么的话，可以看一下。我问她是什么意思，她却没正面回答我。真讨厌啊，干嘛神神秘秘的……不过嘛，她走后我还是打开看了一眼。结果也不知道她是从哪里找到的，是爸爸，妈妈和我一起吃饭的照片。我还以为又是什么不得了的东西呢……但是不知道为什么，自己的眼角湿润了', type: 'text' },
             { id: 'd13', name: '文字(4).txt', content: '...', type: 'text' },
-            { id: 'd13', name: '晚餐.png', content: 'image/吃饭.png', type: 'img' },
+            { id: 'd13', name: '晚餐.png', content: 'image/吃饭.webp', type: 'img' },
             { id: 'd21', name: '文字(5).txt', content: '今晚我又一个人在家。屋外时不时传来的声音，让我翻来覆去怎么也睡不着。明明平时也是这样的夜晚，为什么妈妈在家就不会有这种声音呢？', type: 'text' }
         ],
         pics: [
-            { id: 'p1', name: '海滩.png', content: 'image/全家图1.png', type: 'img' },
-            { id: 'p2', name: '动物园.png', content: 'image/zoo.png', type: 'img' },
-            { id: 'p3', name: '水族馆.png', content: 'image/水族馆1.png', type: 'img' },
-            { id: 'p4', name: '山上.png', content: 'image/山上1.png', type: 'img' },
+            { id: 'p1', name: '海滩.png', content: 'image/全家图1.webp', type: 'img' },
+            { id: 'p2', name: '动物园.png', content: 'image/zoo.webp', type: 'img' },
+            { id: 'p3', name: '水族馆.png', content: 'image/水族馆1.webp', type: 'img' },
+            { id: 'p4', name: '山上.png', content: 'image/山上1.webp', type: 'img' },
             { id: 'p5', name: '文字.txt', content: '这些图片是两年前拍的，那时候的我好小', type: 'text' },
         ],
         secret: [],
@@ -826,10 +1033,10 @@ document.addEventListener("DOMContentLoaded", () => {
             { id: 'd95', name: '文字6.txt', content: 'A -> S, O -> P, Q -> W, M -> Z, V -> B', type: 'text' },
         ],
         pics: [
-            { id: 'p1', name: '海滩.png', content: 'image/全家图2.png', type: 'img' },
-            { id: 'p2', name: '动物园.png', content: 'image/zoo1.png', type: 'img' },
-            { id: 'p3', name: '水族馆.png', content: 'image/水族馆1.png', type: 'img' },
-            { id: 'p4', name: '山上.png', content: 'image/兔子先生.png', type: 'img' },
+            { id: 'p1', name: '海滩.png', content: 'image/全家图2.webp', type: 'img' },
+            { id: 'p2', name: '动物园.png', content: 'image/zoo1.webp', type: 'img' },
+            { id: 'p3', name: '水族馆.png', content: 'image/水族馆1.webp', type: 'img' },
+            { id: 'p4', name: '山上.png', content: 'image/兔子先生.webp', type: 'img' },
             { id: 'p5', name: '文字.txt', content: '...这些照片是两年前拍的', type: 'text' },
         ],
         secret: [],
@@ -857,19 +1064,19 @@ document.addEventListener("DOMContentLoaded", () => {
         vfs = JSON.parse(localStorage.getItem('win10_vfs')) || originalVFS;
     }
 
-    let selectedFiles = { docs: null, pics: null, secret: null, bin: null }; 
+    let selectedFiles = { docs: null, pics: null, secret: null, bin: null };
     let currentEditingFile = null;
 
-    
+
     let isSecretUnlocked = localStorage.getItem('win10_secret_unlocked') === 'true';
-    let isDocsUnlocked = localStorage.getItem('win10_docs_unlocked') === 'true'; 
-    let isDocsUnlockedZ3 = localStorage.getItem('win10_docs_unlocked_z3') === 'true'; 
+    let isDocsUnlocked = localStorage.getItem('win10_docs_unlocked') === 'true';
+    let isDocsUnlockedZ3 = localStorage.getItem('win10_docs_unlocked_z3') === 'true';
 
     function saveVFS() { localStorage.setItem('win10_vfs', JSON.stringify(vfs)); }
     const searchableItems = [
-        { id: 'sch0', name: '成绩单.png', content: 'image/成绩单.png', type: 'img' },
+        { id: 'sch0', name: '成绩单.png', content: 'image/成绩单.webp', type: 'img' },
         { id: 'sch1', name: '哥哥.db', content: 'Error: database disk image is malformed', type: 'text', icon: 'image/db.png'},
-        { id: 'sch2', name: '2018毕业照.png', content: 'image/毕业照.png', type: 'img' },
+        { id: 'sch2', name: '2018毕业照.png', content: 'image/毕业照.webp', type: 'img' },
         { id: 'sch3', name: '未命名.bat', content: '[已被篡改]', type: 'text',icon: 'image/db.png'},
         { id: 'sch4', name: 'key.txt', content: 'RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT', type: 'text',icon: 'image/file.png'},
     ];
@@ -931,17 +1138,17 @@ document.addEventListener("DOMContentLoaded", () => {
             if (results.length > 0) {
                 results.forEach(file => {
                     const div = document.createElement('div');
-                    
-                    div.className = 'file-item'; 
-                    
+
+                    div.className = 'file-item';
+
                     let iconHTML = '';
                     if (file.icon) iconHTML = `<img src="${file.icon}">`;
                     else if (file.type === 'img') iconHTML = `<img src="${file.content}" style="object-fit: cover;">`;
                     else if (file.type === 'exe') iconHTML = `<img src="image/exe.png">`;
                     else iconHTML = `<img src="image/file.png">`;
-                    
+
                     div.innerHTML = `<div class="file-icon">${iconHTML}</div><div class="file-name">${file.name}</div>`;
-                    
+
                     div.onclick = (e) => {
                         e.stopPropagation();
                         document.querySelectorAll('#content-search .file-item').forEach(el => el.classList.remove('selected'));
@@ -974,18 +1181,32 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    let windowsState = JSON.parse(localStorage.getItem('win10_windows')) || {};
+    let windowsState = {};
+    try {
+        windowsState = JSON.parse(localStorage.getItem('win10_windows')) || {};
+    } catch (e) {
+        windowsState = {};
+    }
+    if (localStorage.getItem('win10_windows_loop') !== desktopLoopKey) {
+        windowsState = {};
+        localStorage.removeItem('win10_windows');
+    }
     for (let k in appInfo) if (!windowsState[k]) windowsState[k] = { isOpen: false, isMinimized: false };
-    function saveWindowsState() { localStorage.setItem('win10_windows', JSON.stringify(windowsState)); }
-    
+    function saveWindowsState() {
+        localStorage.setItem('win10_windows_loop', desktopLoopKey);
+        localStorage.setItem('win10_windows', JSON.stringify(windowsState));
+    }
+
     function saveIconsPosition() {
         const state = {};
         document.querySelectorAll('.desktop-icon').forEach(icon => state[icon.id] = { left: icon.style.left, top: icon.style.top });
+        localStorage.setItem('win10_icons_loop', desktopLoopKey);
+        localStorage.setItem('win10_icons_layout_version', DESKTOP_LAYOUT_VERSION);
         localStorage.setItem('win10_icons', JSON.stringify(state));
     }
 
     function createCreepyPicElement(appId) {
-        if (document.getElementById(`icon-${appId}`)) return; 
+        if (document.getElementById(`icon-${appId}`)) return;
         const desktop = document.getElementById('desktop');
         const picIcon = document.createElement('div');
         picIcon.className = 'desktop-icon';
@@ -993,9 +1214,9 @@ document.addEventListener("DOMContentLoaded", () => {
         picIcon.setAttribute('data-app', appId);
         picIcon.innerHTML = `<div class="icon-img"><img src="${appInfo[appId].icon}" style="object-fit: cover;"></div><div class="icon-text">${appInfo[appId].name}</div>`;
         desktop.appendChild(picIcon);
-        
-        makeDraggable(picIcon, picIcon); 
-        
+
+        makeDraggable(picIcon, picIcon);
+
         picIcon.ondblclick = () => {
             document.getElementById('title-photoviewer').innerText = `${appInfo[appId].name} - 照片查看器`;
             document.getElementById('viewer-img').src = appInfo[appId].icon;
@@ -1012,14 +1233,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 for (let i = 1; i <= 9; i++) {
                     createCreepyPicElement(`cpic${i}`);
                 }
-            }
-        }
-
-        const savedIcons = JSON.parse(localStorage.getItem('win10_icons'));
-        if (savedIcons) {
-            for (let id in savedIcons) {
-                const icon = document.getElementById(id);
-                if (icon) { icon.style.left = savedIcons[id].left; icon.style.top = savedIcons[id].top; }
             }
         }
 
@@ -1040,7 +1253,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const icon = document.getElementById(`icon-cpic${i}`);
                 if (icon) icon.style.display = 'none';
             }
-            
+
             const newsIcon = document.getElementById('icon-news');
             if (newsIcon) newsIcon.style.display = 'none';
 
@@ -1110,7 +1323,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const googleIcon = document.getElementById('icon-google');
-            if (googleIcon) googleIcon.style.display = 'flex';  
+            if (googleIcon) googleIcon.style.display = 'flex';
 
         } else if (isSecretUnlocked) {
             appInfo['secret'].icon = 'image/folder.png';
@@ -1140,6 +1353,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        applyDesktopLayout();
+
         for (let appId in windowsState) {
             if (windowsState[appId].isOpen && appInfo[appId]) {
                 const win = document.getElementById(`win-${appId}`);
@@ -1161,6 +1376,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     loadSystemData();
+
+    // 当前周目的图标/窗口已配置完毕,显示桌面(此前一直隐藏以避免残影闪烁)
+    document.body.classList.add('pt-ready');
 
     setInterval(() => {
         const now = new Date();
@@ -1187,7 +1405,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!isGridOccupied(x, y, ignoreId)) return { x, y };
             }
         }
-        return { x: OFFSET_X, y: OFFSET_Y }; 
+        return { x: OFFSET_X, y: OFFSET_Y };
     }
 
     function getRandomEmptyGridPos(ignoreId) {
@@ -1206,7 +1424,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (emptySpots.length > 0) {
             return emptySpots[Math.floor(Math.random() * emptySpots.length)];
         }
-        return { x: OFFSET_X, y: OFFSET_Y }; 
+        return { x: OFFSET_X, y: OFFSET_Y };
     }
 
     const glitchChars = ['æØÞÆø', 'ÐÆ₳₳₳', 'ï»¿ï»¿', '̴̴̴', '▒▒▒▒▒▒', '§§§§§', '┼┼┼┼┼', '☠☠☠☠☠', '■■■■■', '¿¿¿¿¿','我会见到你的'];
@@ -1215,14 +1433,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function executeGlitchState() {
         const startTimeStr = localStorage.getItem('win10_glitch_start');
         if (!startTimeStr) return;
-        
+
         const startTime = parseInt(startTimeStr, 10);
         const now = Date.now();
         const elapsed = now - startTime;
-        
+
         const totalDuration = 6000;
-        const waitTime = 1000;     
-        
+        const waitTime = 1000;
+
         if (elapsed >= totalDuration) {
             finishGlitch();
             return;
@@ -1230,7 +1448,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const desktop = document.getElementById('desktop');
         const icons = document.querySelectorAll('.desktop-icon .icon-text');
-        
+
         icons.forEach(el => {
             if (!el.hasAttribute('data-orig-name')) {
                 el.setAttribute('data-orig-name', el.innerText);
@@ -1238,10 +1456,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         function startRedAndGlitch() {
-            desktop.style.transition = 'none'; 
+            desktop.style.transition = 'none';
             desktop.style.backgroundImage = 'none';
             desktop.style.backgroundColor = '#6e0000';
-            
+
             if (glitchInterval) clearInterval(glitchInterval);
             glitchInterval = setInterval(() => {
                 icons.forEach(el => {
@@ -1266,14 +1484,14 @@ document.addEventListener("DOMContentLoaded", () => {
             glitchInterval = null;
         }
         localStorage.removeItem('win10_glitch_start');
-        
+
         const desktop = document.getElementById('desktop');
         desktop.style.backgroundColor = '';
         desktop.style.backgroundImage = '';
         document.querySelectorAll('.desktop-icon').forEach(icon => {
             const appId = icon.getAttribute('data-app');
             const textEl = icon.querySelector('.icon-text');
-            
+
             if (appId && appId.startsWith('cpic')) {
                 const num = appId.replace('cpic', '');
                 textEl.innerText = `${num}.png`;
@@ -1318,17 +1536,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (isSolved) {
             localStorage.setItem('win10_creepy_puzzle_solved', 'true');
-            
+
             pieces.forEach(el => el.style.display = 'none');
 
             createCreepyPicElement('merged_pic');
-            
+
             const mergedIcon = document.getElementById('icon-merged_pic');
             if (mergedIcon) {
                 mergedIcon.style.left = (baseLeft + GRID_W) + "px";
                 mergedIcon.style.top = (baseTop + GRID_H) + "px";
             }
-            
+
             saveIconsPosition();
         }
     }
@@ -1348,7 +1566,7 @@ document.addEventListener("DOMContentLoaded", () => {
             startX = element.offsetLeft; startY = element.offsetTop;
             document.onmouseup = closeDragElement; document.onmousemove = elementDrag;
             if (element.classList.contains('window')) bringToFront(element.getAttribute('data-app'));
-            else element.style.zIndex = 999; 
+            else element.style.zIndex = 999;
         };
         function elementDrag(e) {
             e.preventDefault();
@@ -1364,22 +1582,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (element.id !== 'icon-bin' && isIntersecting(element, binEl)) {
                     const dragId = element.getAttribute('data-app');
                     if(dragId !== 'desktop-pic' && dragId !== 'search') {
-                        moveToBin_App(dragId); return; 
+                        moveToBin_App(dragId); return;
                     }
                 }
-                
+
                 let snapLeft = Math.round((element.offsetLeft - OFFSET_X) / GRID_W) * GRID_W + OFFSET_X;
                 let snapTop = Math.round((element.offsetTop - OFFSET_Y) / GRID_H) * GRID_H + OFFSET_Y;
-                
-                let maxLeft = window.innerWidth - GRID_W; 
+
+                let maxLeft = window.innerWidth - GRID_W;
                 let maxTop = window.innerHeight - GRID_H - 40;
-                
-                snapLeft = Math.max(OFFSET_X, Math.min(snapLeft, maxLeft)); 
+
+                snapLeft = Math.max(OFFSET_X, Math.min(snapLeft, maxLeft));
                 snapTop = Math.max(OFFSET_Y, Math.min(snapTop, maxTop));
-                
+
                 if (isGridOccupied(snapLeft, snapTop, element.id)) { element.style.left = startX + "px"; element.style.top = startY + "px"; }
                 else { element.style.left = snapLeft + "px"; element.style.top = snapTop + "px"; }
-                
+
                 saveIconsPosition();
 
                 checkCreepyPuzzle();
@@ -1413,12 +1631,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById('zip-pwd-input').value = '';
                 document.getElementById('pwd-error').style.display = 'none';
                 document.getElementById('zip-pwd-input').focus();
-            } 
+            }
             else if (appId.startsWith('cpic')) {
                 document.getElementById('title-photoviewer').innerText = `${appInfo[appId].name} - 照片查看器`;
                 document.getElementById('viewer-img').src = appInfo[appId].icon;
                 openApp('photoviewer');
-            } 
+            }
             else {
                 openApp(appId);
             }
@@ -1441,7 +1659,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 pwdInput.focus();
                 if (!isZhoumu2 && !isZhoumu3 && localStorage.getItem('win10_event_anmo_fake_pwd') !== 'true') {
                     localStorage.setItem('win10_event_anmo_fake_pwd', 'true');
-                    
+
                     const chatSequenceAnmo = [
                         { text: '你在干嘛呀宁宁？', delay: 3000, isMine: false },
                         { text: '没事呀', delay: 2000, isMine: true },
@@ -1470,22 +1688,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             if (!msg.isMine) {
                                 wechatData['anmo'].unread = true;
-                                
+
                                 const audio = document.getElementById('msg-sound');
                                 if (audio) {
                                     audio.currentTime = 0;
                                     audio.play().catch(e => console.log('浏览器阻止了自动播放'));
                                 }
-                                
+
                                 const toast = document.getElementById('win-toast');
                                 if (toast) {
                                     const toastImgs = toast.querySelectorAll('img');
-                                    if(toastImgs.length > 1) toastImgs[1].src = 'image/anmo.jpg';
+                                    if(toastImgs.length > 1) toastImgs[1].src = 'image/anmo.webp';
                                     const nameDiv = toast.querySelector('div[style*="font-weight: bold"]');
                                     if(nameDiv) nameDiv.innerText = '安沫';
 
                                     document.getElementById('toast-body').innerText = msg.text;
-                                    
+
                                     toast.onclick = () => {
                                         openApp('wechat');
                                         toast.style.right = '-350px';
@@ -1497,11 +1715,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     clearTimeout(toastTimeoutAnmo);
                                     toastTimeoutAnmo = setTimeout(() => {
                                         toast.style.right = '-350px';
-                                    }, 4000); 
+                                    }, 4000);
                                 }
                             }
                             saveWeChat();
-                            renderWeChat(); 
+                            renderWeChat();
                         }
                     };
                     runSequenceAnmo();
@@ -1514,7 +1732,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 appInfo['secret'].icon = 'image/folder.png';
                 openApp('secret');
             } else {
-  
+
                 pwdError.style.display = 'block';
                 pwdInput.focus();
             }
@@ -1544,7 +1762,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (isZhoumu2 && localStorage.getItem('win10_event_dad_diary') !== 'true') {
                     localStorage.setItem('win10_event_dad_diary', 'true');
-                    
+
                     const chatSequenceDad = [
                         { text: '宁宁，你在看什么？', delay: 3000, isMine: false },
                         { text: '妈妈不是说过了吗早点睡觉吗？', delay: 3500, isMine: false },
@@ -1573,37 +1791,37 @@ document.addEventListener("DOMContentLoaded", () => {
                     ];
 
                     let toastTimeoutDad;
-                    let addedMsgCount = 0; 
+                    let addedMsgCount = 0;
                     const runSequenceDad = async () => {
                         for (let i = 0; i < chatSequenceDad.length; i++) {
                             const msg = chatSequenceDad[i];
-                            
+
                             await new Promise(r => setTimeout(r, msg.delay));
-                            
+
                             const now = new Date();
                             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-                            
+
                             wechatData['dad'].messages.push({ time: timeStr, text: msg.text, isMine: msg.isMine });
                             addedMsgCount++;
-                            
+
                             if (!msg.isMine) {
                                 wechatData['dad'].unread = true;
-                                
+
                                 const audio = document.getElementById('msg-sound');
                                 if (audio) {
                                     audio.currentTime = 0;
                                     audio.play().catch(e => console.log('浏览器阻止了自动播放'));
                                 }
-                                
+
                                 const toast = document.getElementById('win-toast');
                                 if (toast) {
                                     const toastImgs = toast.querySelectorAll('img');
-                                    if(toastImgs.length > 1) toastImgs[1].src = 'image/baba.png';
+                                    if(toastImgs.length > 1) toastImgs[1].src = 'image/baba.webp';
                                     const nameDiv = toast.querySelector('div[style*="font-weight: bold"]');
                                     if(nameDiv) nameDiv.innerText = '爸爸';
 
                                     document.getElementById('toast-body').innerText = msg.text;
-                                    
+
                                     toast.onclick = () => {
                                         openApp('wechat');
                                         toast.style.right = '-350px';
@@ -1615,7 +1833,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     clearTimeout(toastTimeoutDad);
                                     toastTimeoutDad = setTimeout(() => {
                                         toast.style.right = '-350px';
-                                    }, 4000); 
+                                    }, 4000);
                                 }
                             }
                             saveWeChat();
@@ -1626,24 +1844,24 @@ document.addEventListener("DOMContentLoaded", () => {
                             const wechatWin = document.getElementById('win-wechat');
                             if (wechatWin && wechatWin.style.display !== 'none' && activeWeChatContact === 'dad') {
                                 clearInterval(checkReadInterval);
-                                
+
                                 setTimeout(async () => {
                                     const messages = wechatData['dad'].messages;
                                     const startIndex = messages.length - addedMsgCount;
-                                    
+
                                     for (let i = messages.length - 1; i >= Math.max(0, startIndex); i--) {
                                         messages[i].type = 'recall';
-                                        messages[i].text = '"爸爸" 撤回了一条消息'; 
-                                        
+                                        messages[i].text = '"爸爸" 撤回了一条消息';
+
                                         saveWeChat();
                                         if (activeWeChatContact === 'dad') renderWeChat();
-                                        
-                                        await new Promise(r => setTimeout(r, 150)); 
+
+                                        await new Promise(r => setTimeout(r, 150));
                                     }
 
                                 }, 2500);
                             }
-                        }, 500); 
+                        }, 500);
                     };
 
                     runSequenceDad();
@@ -1685,7 +1903,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (val) {
                 wcSearchDropdown.style.display = 'block';
                 let match = searchableFriendsDB[val];
-                
+
                 if (match) {
                     wcSearchDropdown.innerHTML = `
                         <div style="padding: 10px 15px; font-size: 12px; color: #999;">网络查找</div>
@@ -1716,19 +1934,19 @@ document.addEventListener("DOMContentLoaded", () => {
     function showProfileView(friendData) {
         if(wcChatPanel) wcChatPanel.style.display = 'none';
         if(wcProfilePanel) wcProfilePanel.style.display = 'flex';
-        
+
         document.getElementById('profile-avatar').src = friendData.avatar;
         document.getElementById('profile-name').innerText = friendData.name;
-        document.getElementById('profile-nickname').innerText = friendData.name; 
+        document.getElementById('profile-nickname').innerText = friendData.name;
         document.getElementById('profile-wechat-id').innerText = friendData.id;
         document.getElementById('profile-region').innerText = friendData.region;
-        document.getElementById('profile-sign').innerText = friendData.sign; 
+        document.getElementById('profile-sign').innerText = friendData.sign;
 
         const btnAdd = document.getElementById('profile-add-btn');
         const btnChat = document.getElementById('profile-chat-btn');
 
         const existingKey = Object.keys(wechatData).find(k => wechatData[k].name === friendData.name && !wechatData[k].hidden);
-        
+
         if (existingKey) {
             btnAdd.style.display = 'none';
             btnChat.style.display = 'block';
@@ -1743,7 +1961,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btnChat.style.display = 'none';
             btnAdd.innerText = '添加到通讯录';
             btnAdd.onclick = () => {
-                const newKey = friendData.id; 
+                const newKey = friendData.id;
                 wechatData[newKey] = {
                     name: friendData.name,
                     avatar: friendData.avatar,
@@ -1751,7 +1969,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
                 saveWeChat();
                 renderWeChat();
-                
+
                 btnAdd.innerText = '已添加';
                 setTimeout(() => {
                     btnAdd.style.display = 'none';
@@ -1773,7 +1991,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const count = contact.members.length;
             const avatars = contact.members.map(m => wechatData[m] ? (wechatData[m].avatar || 'image/image.png') : 'image/image.png');
             let innerHTML = '';
-            
+
             if (count === 2) {
                 innerHTML = `
                     <img src="${avatars[0]}" style="width:17px; height:100%; object-fit:cover;">
@@ -1817,30 +2035,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const contactList = document.getElementById('wechat-contact-list');
         const chatTitle = document.getElementById('wechat-chat-title');
         const msgList = document.getElementById('wechat-msg-list');
-        
+
         if (!contactList || !chatTitle || !msgList) return;
 
         contactList.innerHTML = '';
         for (let id in wechatData) {
             const contact = wechatData[id];
-            
+
             if (contact.hidden) continue;
 
             const isActive = id === activeWeChatContact;
             const div = document.createElement('div');
-            
+
             div.style.padding = '12px 15px';
             div.style.display = 'flex';
             div.style.alignItems = 'center';
             div.style.gap = '10px';
             div.style.cursor = 'pointer';
             div.style.background = isActive ? '#c6c6c6' : 'transparent';
-            
+
             div.onmouseenter = () => { if (!isActive) div.style.background = '#d9d9d9'; };
             div.onmouseleave = () => { if (!isActive) div.style.background = 'transparent'; };
-            
+
             const dynamicAvatarHTML = generateWeChatAvatarHTML(contact);
-            
+
             const unreadBadge = contact.unread ? `<div style="position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ff3b30; border-radius: 50%;"></div>` : '';
             const avatarContainer = `<div style="position: relative; display: flex; flex-shrink: 0;">${dynamicAvatarHTML}${unreadBadge}</div>`;
 
@@ -1878,9 +2096,9 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             div.innerHTML = `${avatarContainer} ${infoContainer}`;
-            
-            div.onclick = () => { 
-                activeWeChatContact = id; 
+
+            div.onclick = () => {
+                activeWeChatContact = id;
                 if (wechatData[id].unread) {
                     wechatData[id].unread = false;
                     saveWeChat();
@@ -1891,7 +2109,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (cp) cp.style.display = 'flex';
                 if (pp) pp.style.display = 'none';
 
-                renderWeChat(); 
+                renderWeChat();
             };
             contactList.appendChild(div);
         }
@@ -1899,14 +2117,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentData = wechatData[activeWeChatContact];
         chatTitle.innerText = currentData.name;
         msgList.innerHTML = '';
-        
+
         let lastTime = '';
 
         currentData.messages.forEach(msg => {
             let timeHtml = '';
             if (msg.time && msg.time !== lastTime) {
                 timeHtml = `<div style="text-align: center; color: #b2b2b2; font-size: 12px; margin-bottom: 10px;">${msg.time}</div>`;
-                lastTime = msg.time; 
+                lastTime = msg.time;
             }
 
             if (msg.type === 'recall' || msg.type === 'system') {
@@ -1924,12 +2142,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const isGroupChat = currentData.members && currentData.members.length > 1;
             const showName = isGroupChat && !msg.isMine;
             const senderNameHtml = showName ? `<div style="font-size:12px; color:#999; margin-bottom:4px;">${msg.sender || ''}</div>` : '';
-            
+
             const align = msg.isMine ? 'row-reverse' : 'row';
             const bgColor = msg.isMine ? '#95ec69' : '#ffffff';
             const borderRadius = msg.isMine ? '4px 0px 4px 4px' : '0px 4px 4px 4px';
-            
-            let msgAvatar = msg.isMine ? 'image/ningning.jpg' : (currentData.avatar || 'image/image.png');
+
+            let msgAvatar = msg.isMine ? 'image/ningning.webp' : (currentData.avatar || 'image/image.png');
             if (isGroupChat && !msg.isMine && msg.sender) {
                 for (let key in wechatData) {
                     if (wechatData[key].name === msg.sender) {
@@ -1942,7 +2160,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let messageContentHtml = '';
             if (msg.type === 'img') {
                 let extraClick = '';
-                if (msg.content === 'image/bql.png' && activeWeChatContact === 'yueyue' && typeof isZhoumu3 !== 'undefined' && isZhoumu3) {
+                if (msg.content === 'image/bql.webp' && activeWeChatContact === 'yueyue' && typeof isZhoumu3 !== 'undefined' && isZhoumu3) {
                     extraClick = `onclick="openYueyueGlitchPhoto()"`;
                 } else {
                     extraClick = `onclick="document.getElementById('title-photoviewer').innerText='照片查看器'; document.getElementById('viewer-img').src='${msg.content}'; openApp('photoviewer');"`;
@@ -1981,11 +2199,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `;
         });
-        
+
         msgList.scrollTop = msgList.scrollHeight;
     }
 
-    
+
     const btnChat = document.getElementById('btn-wechat-chat');
     const btnMoments = document.getElementById('btn-wechat-moments');
     const viewChat = document.getElementById('wechat-chat-view');
@@ -2016,14 +2234,14 @@ document.addEventListener("DOMContentLoaded", () => {
             let imagesHtml = '';
             if (post.images && post.images.length > 0) {
                 if (post.images.length === 1) {
-                    imagesHtml = `<img src="${post.images[0]}" 
-                        onclick="document.getElementById('title-photoviewer').innerText='朋友圈照片 - 照片查看器'; document.getElementById('viewer-img').src='${post.images[0]}'; openApp('photoviewer');" 
+                    imagesHtml = `<img src="${post.images[0]}"
+                        onclick="document.getElementById('title-photoviewer').innerText='朋友圈照片 - 照片查看器'; document.getElementById('viewer-img').src='${post.images[0]}'; openApp('photoviewer');"
                         style="max-width: 250px; max-height: 200px; object-fit: contain; margin-top: 8px; cursor: zoom-in;">`;
                 } else {
                     imagesHtml = `<div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-width: 260px;">`;
                     post.images.forEach(img => {
-                        imagesHtml += `<img src="${img}" 
-                            onclick="document.getElementById('title-photoviewer').innerText='朋友圈照片 - 照片查看器'; document.getElementById('viewer-img').src='${img}'; openApp('photoviewer');" 
+                        imagesHtml += `<img src="${img}"
+                            onclick="document.getElementById('title-photoviewer').innerText='朋友圈照片 - 照片查看器'; document.getElementById('viewer-img').src='${img}'; openApp('photoviewer');"
                             style="width: 80px; height: 80px; object-fit: cover; cursor: zoom-in;">`;
                     });
                     imagesHtml += `</div>`;
@@ -2067,14 +2285,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             postElement.innerHTML = `
                 <img src="${post.authorAvatar}" style="width: 42px; height: 42px; border-radius: 4px; object-fit: cover; margin-right: 12px; flex-shrink: 0; cursor: pointer;">
-                
+
                 <div style="flex: 1; display: flex; flex-direction: column;">
                     <div style="color: #576b95; font-size: 15px; font-weight: bold; margin-bottom: 2px; cursor: pointer;">${blurYueyueName(post.authorName, vanished)}</div>
-                    
+
                     ${post.text ? `<div style="color: #222; font-size: 14px; line-height: 1.6; word-wrap: break-word;">${blurYueyueName(post.text, vanished)}</div>` : ''}
-                    
+
                     ${imagesHtml}
-                    
+
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
                         <span style="color: #b2b2b2; font-size: 12px;">${post.time}</span>
                         <div style="background: #f1f1f1; border-radius: 2px; padding: 0 6px; height: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
@@ -2082,7 +2300,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span style="display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: #576b95;"></span>
                         </div>
                     </div>
-                    
+
                     ${interactionBox}
                 </div>
             `;
@@ -2094,7 +2312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const wechatInput = document.getElementById('wechat-input');
     const wechatSendBtn = document.getElementById('wechat-send-btn');
-    
+
     function sendWeChatMsg() {
         if(!wechatInput) return;
         const text = wechatInput.value.trim();
@@ -2108,10 +2326,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const cleanText = text.toLowerCase().replace(/\s+/g, '');
             const hasClue = cleanText.includes('imfine') || cleanText.includes("i'mfine") || cleanText.includes('iamfine')|| cleanText.includes("i'm fine") ;
-            
-            if (activeWeChatContact === 'anmo' && hasClue && localStorage.getItem('win10_event_anmo_morse') !== 'true') {
+
+            if (activeWeChatContact === 'anmo' && hasClue && !isZhoumu2 && !isZhoumu3 && localStorage.getItem('win10_event_anmo_morse') !== 'true') {
                 localStorage.setItem('win10_event_anmo_morse', 'true');
-                
+
                 const anmoSequence = [
                     { text: 'im fine?', delay: 2000, isMine: false },
                     { text: '笑死我了, 这个月月', delay: 2500, isMine: false },
@@ -2123,36 +2341,36 @@ document.addEventListener("DOMContentLoaded", () => {
                     { text: '行吧这个月月...', delay: 2000, isMine: true },
                     { text: '哈哈哈', delay: 2000, isMine: false },
                 ];
-                
+
                 let toastTimeoutAnmoMorse;
                 const runSequenceAnmoMorse = async () => {
                     for (let i = 0; i < anmoSequence.length; i++) {
                         const msg = anmoSequence[i];
                         await new Promise(r => setTimeout(r, msg.delay));
-                        
+
                         const replyTime = new Date();
                         const replyTimeStr = replyTime.getHours().toString().padStart(2, '0') + ':' + replyTime.getMinutes().toString().padStart(2, '0');
-                        
+
                         wechatData['anmo'].messages.push({ time: replyTimeStr, text: msg.text, isMine: msg.isMine });
-                        
+
                         if (!msg.isMine) {
                             wechatData['anmo'].unread = true;
-                            
+
                             const audio = document.getElementById('msg-sound');
                             if (audio) {
                                 audio.currentTime = 0;
                                 audio.play().catch(e => console.log('浏览器阻止了自动播放'));
                             }
-                            
+
                             const toast = document.getElementById('win-toast');
                             if (toast) {
                                 const toastImgs = toast.querySelectorAll('img');
-                                if(toastImgs.length > 1) toastImgs[1].src = 'image/anmo.jpg';
+                                if(toastImgs.length > 1) toastImgs[1].src = 'image/anmo.webp';
                                 const nameDiv = toast.querySelector('div[style*="font-weight: bold"]');
                                 if(nameDiv) nameDiv.innerText = '安沫';
 
                                 document.getElementById('toast-body').innerText = msg.text;
-                                
+
                                 toast.onclick = () => {
                                     openApp('wechat');
                                     toast.style.right = '-350px';
@@ -2164,7 +2382,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 clearTimeout(toastTimeoutAnmoMorse);
                                 toastTimeoutAnmoMorse = setTimeout(() => {
                                     toast.style.right = '-350px';
-                                }, 4000); 
+                                }, 4000);
                             }
                         }
                         saveWeChat();
@@ -2196,11 +2414,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(() => {
                     const replyTime = new Date();
                     const replyTimeStr = replyTime.getHours().toString().padStart(2, '0') + ':' + replyTime.getMinutes().toString().padStart(2, '0');
-                    wechatData['brother'].messages.push({ 
-                        time: replyTimeStr, 
-                        text: '系统：由于对方账号异常，你的消息没有送达', 
-                        isMine: false, 
-                        sender: '系统' 
+                    wechatData['brother'].messages.push({
+                        time: replyTimeStr,
+                        text: '系统：由于对方账号异常，你的消息没有送达',
+                        isMine: false,
+                        sender: '系统'
                     });
                     saveWeChat();
                     if (activeWeChatContact === 'brother') {
@@ -2213,14 +2431,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(() => {
                     const replyTime = new Date();
                     const replyTimeStr = replyTime.getHours().toString().padStart(2, '0') + ':' + replyTime.getMinutes().toString().padStart(2, '0');
-                    wechatData['bcmh'].messages.push({ 
-                        time: replyTimeStr, 
+                    wechatData['bcmh'].messages.push({
+                        time: replyTimeStr,
                         text: '自动回复：168/366',
-                        isMine: false, 
+                        isMine: false,
                         sender: '不吃米糊ovo'
                     });
                     saveWeChat();
-                    
+
                     if (activeWeChatContact === 'bcmh') {
                         renderWeChat();
                     }
@@ -2234,12 +2452,12 @@ document.addEventListener("DOMContentLoaded", () => {
         wechatSendBtn.onmouseleave = () => wechatSendBtn.style.background = '#e9e9e9';
         wechatSendBtn.onclick = sendWeChatMsg;
     }
-    
+
     if (wechatInput) {
         wechatInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { 
-                e.preventDefault(); 
-                sendWeChatMsg(); 
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendWeChatMsg();
             }
         };
     }
@@ -2253,17 +2471,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const div = document.createElement('div');
             div.className = 'file-item';
             div.id = `file-${file.id}`;
-            
+
             let iconHTML = '';
             if (file.type === 'img') iconHTML = `<img src="${file.content}" style="object-fit: cover;">`;
             else if (file.type === 'exe') iconHTML = `<img src="image/exe.png">`;
             else if (file.type === 'video') iconHTML = `<img src="image/video.png">`;
             else iconHTML = `<img src="image/file.png">`;
-            
+
             div.innerHTML = `<div class="file-icon">${iconHTML}</div><div class="file-name">${file.name}</div>`;
-            
+
             div.onclick = (e) => {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 document.querySelectorAll(`#content-${folderName} .file-item`).forEach(el => el.classList.remove('selected'));
                 div.classList.add('selected');
                 selectedFiles[folderName] = file.id;
@@ -2283,11 +2501,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const dlModal = document.getElementById('download-modal');
-    
+
     document.getElementById('dl-ok-btn').onclick = () => {
         dlModal.style.display = 'none';
         localStorage.setItem('win10_cmd_downloaded', 'true');
-        
+
         const iconCmd = document.getElementById('icon-cmd');
         if (iconCmd) {
             iconCmd.style.display = 'flex';
@@ -2296,7 +2514,7 @@ document.addEventListener("DOMContentLoaded", () => {
             saveIconsPosition();
         }
     };
-    
+
     document.getElementById('dl-cancel-btn').onclick = () => dlModal.style.display = 'none';
 
     const btnDownloadHospPdf = document.getElementById('btn-download-hosp-pdf');
@@ -2320,31 +2538,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnDownloadHospPdf.innerHTML = `正在下载...`;
 
                 let progress = 0;
-                
+
                 let downloadTimer = setInterval(() => {
-                    progress += Math.random() * 20 + 10; 
-                    
+                    progress += Math.random() * 20 + 10;
+
                     if (progress >= 100) {
                         progress = 100;
                         clearInterval(downloadTimer);
-                        
+
                         if(dlStatus) dlStatus.innerText = '2.4 MB • 下载完成';
                         if(dlProgressBar) dlProgressBar.style.display = 'none';
                         if(dlIconBox) dlIconBox.style.opacity = '1';
-                        
+
                         btnDownloadHospPdf.disabled = false;
                         btnDownloadHospPdf.style.opacity = '1';
                         btnDownloadHospPdf.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 重新下载`;
-                        
+
                         localStorage.setItem('win10_hospital_pdf_downloaded', 'true');
                         if (!isZhoumu3) {
                             const iconHospPdf = document.getElementById('icon-hospitalpdf');
                             if (iconHospPdf) {
                                 iconHospPdf.style.display = 'flex';
                                 let pos = getEmptyGridPos('icon-hospitalpdf');
-                                iconHospPdf.style.left = pos.x + "px"; 
+                                iconHospPdf.style.left = pos.x + "px";
                                 iconHospPdf.style.top = pos.y + "px";
-                                saveIconsPosition(); 
+                                saveIconsPosition();
                             }
                         }
 
@@ -2352,7 +2570,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (chromeDownloadFlyout) chromeDownloadFlyout.style.display = 'none';
                         }, 3000);
                     }
-                    
+
                     if(dlProgressFill) dlProgressFill.style.width = progress + '%';
                     if (progress < 100 && dlStatus) {
                         dlStatus.innerText = `${(progress * 0.024).toFixed(1)} MB / 2.4 MB，正在下载...`;
@@ -2400,7 +2618,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const toast = document.getElementById('win-toast');
                         if (toast) {
                             const toastImgs = toast.querySelectorAll('img');
-                            if (toastImgs.length > 1) toastImgs[1].src = 'image/anmo.jpg';
+                            if (toastImgs.length > 1) toastImgs[1].src = 'image/anmo.webp';
                             const nameDiv = toast.querySelector('div[style*="font-weight: bold"]');
                             if (nameDiv) nameDiv.innerText = '安沫';
                             document.getElementById('toast-body').innerText = msg.text;
@@ -2419,24 +2637,24 @@ document.addEventListener("DOMContentLoaded", () => {
             if (file.name === '未命名.bat' && isZhoumu2) {
                 if (localStorage.getItem('win10_creepy_spawned') !== 'true') {
                     localStorage.setItem('win10_creepy_spawned', 'true');
-                    
+
                     for (let i = 1; i <= 9; i++) {
                         const appId = `cpic${i}`;
                         createCreepyPicElement(appId);
-                        
+
                         const icon = document.getElementById(`icon-${appId}`);
                         let pos = getRandomEmptyGridPos(`icon-${appId}`);
                         icon.style.left = pos.x + "px";
                         icon.style.top = pos.y + "px";
                     }
-                    
-                    saveIconsPosition(); 
+
+                    saveIconsPosition();
                 }
             }
 
             if (file.name === '文字(2).txt' && !isZhoumu2 && localStorage.getItem('win10_event_yueyue_msg') !== 'true') {
                 localStorage.setItem('win10_event_yueyue_msg', 'true');
-                
+
                 const chatSequence = [
                     { text: '宁宁，你在吗？', delay: 5000, isMine: false },
                     { text: '今晚兔兔先生好像停播了', delay: 4000, isMine: false },
@@ -2449,41 +2667,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 ];
 
                 let toastTimeout;
-                
+
                 const runSequence = async () => {
                     for (let i = 0; i < chatSequence.length; i++) {
                         const msg = chatSequence[i];
-                        
+
                         await new Promise(r => setTimeout(r, msg.delay));
-                        
+
                         const now = new Date();
                         const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-                        
-                        wechatData['yueyue'].messages.push({ 
-                            time: timeStr, 
-                            text: msg.text, 
-                            content: msg.content, 
+
+                        wechatData['yueyue'].messages.push({
+                            time: timeStr,
+                            text: msg.text,
+                            content: msg.content,
                             type: msg.type || 'text',
-                            isMine: msg.isMine 
+                            isMine: msg.isMine
                         });
-                        
+
                         if (!msg.isMine) {
                             wechatData['yueyue'].unread = true;
-                            
+
                             const audio = document.getElementById('msg-sound');
                             if (audio) {
                                 audio.currentTime = 0;
                                 audio.play().catch(e => console.log('浏览器阻止了自动播放'));
                             }
-                            
+
                             const toast = document.getElementById('win-toast');
 
                             if (toast) {
                                 const toastImgs = toast.querySelectorAll('img');
-                                if(toastImgs.length > 1) toastImgs[1].src = 'image/yueyue.jpg';
+                                if(toastImgs.length > 1) toastImgs[1].src = 'image/yueyue.webp';
                                 const nameDiv = toast.querySelector('div[style*="font-weight: bold"]');
                                 if(nameDiv) nameDiv.innerText = '月月';
-                                
+
                                 document.getElementById('toast-body').innerText = msg.type === 'img' ? '[图片]' : msg.text;
 
                                 toast.onclick = () => {
@@ -2497,7 +2715,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 clearTimeout(toastTimeout);
                                 toastTimeout = setTimeout(() => {
                                     toast.style.right = '-350px';
-                                }, 4000); 
+                                }, 4000);
                             }
                         }
                         saveWeChat();
@@ -2510,7 +2728,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (file.name === '哥哥.db' && isZhoumu2 && localStorage.getItem('win10_event_brother_msg') !== 'true') {
                 localStorage.setItem('win10_event_brother_msg', 'true');
-                
+
                 const chatSequence2 = [
                     { text: '宁宁', delay: 3000, isMine: false },
                     { text: '你找到什么线索了吗？', delay: 2500, isMine: false },
@@ -2522,27 +2740,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 ];
 
                 let toastTimeout2;
-                
+
                 const runSequence2 = async () => {
                     for (let i = 0; i < chatSequence2.length; i++) {
                         const msg = chatSequence2[i];
-                        
+
                         await new Promise(r => setTimeout(r, msg.delay));
-                        
+
                         const now = new Date();
                         const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-                        
+
                         wechatData['yueyue'].messages.push({ time: timeStr, text: msg.text, isMine: msg.isMine });
-                        
+
                         if (!msg.isMine) {
                             wechatData['yueyue'].unread = true;
-                            
+
                             const audio = document.getElementById('msg-sound');
                             if (audio) {
                                 audio.currentTime = 0;
                                 audio.play().catch(e => console.log('浏览器阻止了自动播放'));
                             }
-                            
+
                             const toast = document.getElementById('win-toast');
                             document.getElementById('toast-body').innerText = msg.text;
                             if (toast) {
@@ -2550,7 +2768,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 clearTimeout(toastTimeout2);
                                 toastTimeout2 = setTimeout(() => {
                                     toast.style.right = '-350px';
-                                }, 4000); 
+                                }, 4000);
                             }
                         }
                         saveWeChat();
@@ -2564,11 +2782,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (file.name === '哥哥.db' && isZhoumu2) {
                 if (wechatData['brother']) {
                     wechatData['brother'].hidden = true;
-                    
+
                     if (activeWeChatContact === 'brother') {
                         activeWeChatContact = 'family';
                     }
-                    
+
                     saveWeChat();
                     renderWeChat();
                 }
@@ -2587,7 +2805,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const videoEl = document.getElementById('win10-video-element');
             if (videoEl) {
-                videoEl.src = file.content; 
+                videoEl.src = file.content;
                 videoEl.currentTime = 0;
                 document.getElementById('icon-play').style.display = 'block';
                 document.getElementById('icon-pause').style.display = 'none';
@@ -2599,19 +2817,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('notepad-input').addEventListener('input', (e) => {
         if (currentEditingFile) {
             currentEditingFile.content = e.target.value;
-            saveVFS(); 
+            saveVFS();
         }
     });
 
     function moveToBin_App(appId) {
         document.getElementById(`icon-${appId}`).style.display = 'none';
-        closeApp(appId); 
+        closeApp(appId);
         if (!vfs.bin.find(item => item.isApp && item.id === appId)) {
             vfs.bin.push({ isApp: true, id: appId });
             saveVFS(); saveIconsPosition(); renderBin();
         }
     }
-    
+
     document.querySelectorAll('.btn-del-file').forEach(btn => {
         btn.onclick = () => {
             const folder = btn.getAttribute('data-folder');
@@ -2645,7 +2863,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 div.innerHTML = `<div class="file-icon"><img src="${appInfo[item.id].icon}"></div><div class="file-name">${appInfo[item.id].name}</div>`;
                 div.ondblclick = () => restoreApp(item.id, index);
             } else {
-                
+
                 let iconHTML = '';
                 if (item.file.type === 'img') {
                     iconHTML = `<img src="${item.file.content}" style="object-fit:cover;">`;
@@ -2654,7 +2872,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     iconHTML = `<img src="image/file.png">`;
                 }
-                
+
                 div.innerHTML = `<div class="file-icon">${iconHTML}</div><div class="file-name">${item.file.name}</div>`;
                 div.ondblclick = () => restoreFile(item, index);
             }
@@ -2667,35 +2885,35 @@ document.addEventListener("DOMContentLoaded", () => {
         const icon = document.getElementById(`icon-${appId}`);
         if(icon) {
             icon.style.display = 'flex';
-            let pos = getEmptyGridPos(`icon-${appId}`); 
+            let pos = getEmptyGridPos(`icon-${appId}`);
             icon.style.left = pos.x + "px"; icon.style.top = pos.y + "px";
             saveIconsPosition();
         }
     }
 
     function restoreFile(binItem, binIndex) {
-        vfs[binItem.folder].push(binItem.file); 
+        vfs[binItem.folder].push(binItem.file);
         vfs.bin.splice(binIndex, 1); saveVFS();
         renderBin(); renderFolder(binItem.folder);
     }
 
     const winModal = document.getElementById('win-modal');
-    document.getElementById('empty-bin-btn').onclick = () => { 
-        if (vfs.bin.length > 0) { 
-            const errorSound = new Audio('audio/windowsError.mp3'); 
-            errorSound.volume = 0.7; 
+    document.getElementById('empty-bin-btn').onclick = () => {
+        if (vfs.bin.length > 0) {
+            const errorSound = new Audio('audio/windowsError.mp3');
+            errorSound.volume = 0.7;
             errorSound.play().catch(e => console.log('播放警告音效失败:', e));
-            winModal.style.display = 'flex'; 
-        } 
+            winModal.style.display = 'flex';
+        }
     };
-    
-    document.getElementById('modal-close-x').onclick = () => { 
-        winModal.style.display = 'none'; 
+
+    document.getElementById('modal-close-x').onclick = () => {
+        winModal.style.display = 'none';
         const textEl = winModal.querySelector('.modal-text');
         if (textEl) textEl.innerText = "不能永久删除此文件。系统需要保留以维持正常运行。";
     };
-    document.getElementById('modal-ok-btn').onclick = () => { 
-        winModal.style.display = 'none'; 
+    document.getElementById('modal-ok-btn').onclick = () => {
+        winModal.style.display = 'none';
         const textEl = winModal.querySelector('.modal-text');
         if (textEl) textEl.innerText = "不能永久删除此文件。系统需要保留以维持正常运行。";
     };
@@ -2712,7 +2930,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const lowerVal = val.toLowerCase();
 
                 cmdOutput.innerHTML += `<div style="margin-bottom: 5px;">C:\\Users\\NingNing&gt; ${val}</div>`;
-                
+
                 if (val) {
                     if (isZhoumu3) {
                         const isZ3Unlocked = localStorage.getItem('win10_docs_unlocked_z3') === 'true';
@@ -2784,7 +3002,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         } else {
                             cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; color:#E81123;">Error: Connection Refused.</div>`;
                         }
-                    } 
+                    }
                     else if (isZhoumu2) {
                         const isDadEventTriggered = localStorage.getItem('win10_event_dad_diary') === 'true';
 
@@ -2792,22 +3010,22 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (lowerVal === 'lookbehind') {
                                 cmdInput.disabled = true;
                                 cmdInput.value = '';
-                                
+
                                 setTimeout(() => {
                                     cmdOutput.innerHTML += `<div style="margin-bottom: 5px; color: #fff;">宁宁</div>`;
                                     cmdContent.scrollTop = cmdContent.scrollHeight;
-                                    
+
                                     setTimeout(() => {
                                         cmdOutput.innerHTML += `<div style="margin-bottom: 10px; color: #fff;">你非常想见到我的对吧......</div>`;
                                         cmdContent.scrollTop = cmdContent.scrollHeight;
-                                        
+
                                         setTimeout(() => {
                                             localStorage.setItem('win10_zhoumu3', 'true');
                                             window.location.replace('bluescreen.html');
                                         }, 5000);
                                     }, 1500);
                                 }, 500);
-                                return; 
+                                return;
                             } else if (lowerVal === 'help') {
                                 cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4;">兔先生.exe 已连接。<br>当前可用指令:<br> - help : 查看系统帮助<br> - clear : 清屏</div>`;
                             } else if (lowerVal === 'clear') {
@@ -2824,7 +3042,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             } else {
                                 cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4; color:#E81123;">Error: Connection Refused.</div>`;
                             }
-                    } 
+                    }
                     else {
                         if (lowerVal === 'imwatchingyou') {
                             window.location.replace('bluescreen.html');
@@ -2847,22 +3065,34 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
                 cmdInput.value = '';
-                cmdContent.scrollTop = cmdContent.scrollHeight; 
+                cmdContent.scrollTop = cmdContent.scrollHeight;
             }
         };
     }
-    
+
     function bringToFront(appId) {
         const win = document.getElementById(`win-${appId}`);
         if(!win) return;
-        zIndexCounter++; 
-        
-        win.style.setProperty('z-index', zIndexCounter, 'important'); 
-        
+        zIndexCounter++;
+
+        win.style.setProperty('z-index', zIndexCounter, 'important');
+
         document.querySelectorAll('.task-item').forEach(item => item.classList.remove('active'));
         const taskItem = document.getElementById(`task-${appId}`);
         if(taskItem) taskItem.classList.add('active');
     }
+
+    // "视频"里的声音(兔子先生 tuzi.html)在 iframe 内用 WebAudio 播放,
+    // 隐藏窗口不会自动停止,需要主动通知 iframe 暂停/恢复,避免关闭后音乐残留。
+    function setVideoIframeAudio(paused) {
+        const vwin = document.getElementById('win-videoplayer');
+        if (!vwin) return;
+        const iframe = vwin.querySelector('iframe');
+        if (iframe && iframe.contentWindow) {
+            try { iframe.contentWindow.postMessage(paused ? 'tuzi-audio-pause' : 'tuzi-audio-resume', '*'); } catch (e) {}
+        }
+    }
+    window.stopDesktopVideoAudio = () => setVideoIframeAudio(true);
 
     function openApp(appId) {
         const win = document.getElementById(`win-${appId}`);
@@ -2876,8 +3106,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (state.isMinimized) {
             state.isMinimized = false; win.style.display = "flex";
         }
-        bringToFront(appId); saveWindowsState(); 
-        
+        bringToFront(appId); saveWindowsState();
+
+        if (appId === 'videoplayer') setVideoIframeAudio(false);
+
         if (appId === 'cmd' && cmdInput) {
             cmdInput.focus();
         }
@@ -2903,21 +3135,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const title = document.getElementById('title-photoviewer');
         if (title) title.innerText = '照片查看器';
         const viewer = document.getElementById('viewer-img');
-        if (viewer) viewer.src = 'image/bql.png';
+        if (viewer) viewer.src = 'image/bql.webp';
         openApp('photoviewer');
         setTimeout(() => {
             const v = document.getElementById('viewer-img');
-            if (v) v.src = 'image/bql1.png';
+            if (v) v.src = 'image/bql1.webp';
         }, 100);
     }
     window.openYueyueGlitchPhoto = openYueyueGlitchPhoto;
 
     function minimizeApp(appId) {
-        windowsState[appId].isMinimized = true; 
+        windowsState[appId].isMinimized = true;
         const win = document.getElementById(`win-${appId}`);
         if(win) win.style.display = "none";
+        if (appId === 'videoplayer') setVideoIframeAudio(true);
         const taskItem = document.getElementById(`task-${appId}`); if(taskItem) taskItem.classList.remove('active');
-        saveWindowsState(); 
+        saveWindowsState();
     }
 
     function closeApp(appId) {
@@ -2927,6 +3160,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(win) {
             win.style.display = "none"; win.classList.remove('maximized'); win.querySelector('.btn-max').innerText = "▢";
         }
+        if (appId === 'videoplayer') setVideoIframeAudio(true);
         const taskItem = document.getElementById(`task-${appId}`); if (taskItem) taskItem.remove();
         saveWindowsState();
         if(appId === 'notepad') currentEditingFile = null;
@@ -2940,7 +3174,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (e) {}
             if (wechatData && wechatData['yueyue'] && wechatData['yueyue'].messages) {
                 const targetMsg = wechatData['yueyue'].messages.find(
-                    m => m.type === 'img' && m.content === 'image/bql.png'
+                    m => m.type === 'img' && m.content === 'image/bql.webp'
                 );
                 if (targetMsg) {
                     targetMsg.type = 'recall';
@@ -2959,12 +3193,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createTaskbarItem(appId) {
-        if (!appInfo[appId] || document.getElementById(`task-${appId}`)) return; 
+        if (!appInfo[appId] || document.getElementById(`task-${appId}`)) return;
         const item = document.createElement('div');
         item.className = 'task-item open active'; item.id = `task-${appId}`; item.title = appInfo[appId].name;
 
        item.innerHTML = `<img src="${appInfo[appId].icon}" alt="${appInfo[appId].name}" style="width: 20px; height: 20px; object-fit: contain;">`;
-        
+
         item.onclick = () => {
             const state = windowsState[appId]; const win = document.getElementById(`win-${appId}`);
             if (state.isMinimized) { state.isMinimized = false; win.style.display = "flex"; bringToFront(appId); saveWindowsState(); }
@@ -2975,13 +3209,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.querySelectorAll('.btn-min').forEach(btn => btn.onclick = (e) => { e.stopPropagation(); minimizeApp(btn.getAttribute('data-app')); });
-    document.querySelectorAll('.btn-max').forEach(btn => btn.onclick = (e) => { 
+    document.querySelectorAll('.btn-max').forEach(btn => btn.onclick = (e) => {
         e.stopPropagation(); const win = document.getElementById(`win-${btn.getAttribute('data-app')}`);
         win.classList.toggle('maximized'); btn.innerText = win.classList.contains('maximized') ? "❐" : "▢";
     });
     document.querySelectorAll('.btn-close').forEach(btn => btn.onclick = (e) => { e.stopPropagation(); closeApp(btn.getAttribute('data-app')); });
-    
-    
+
+
     const wechatInputContainer = document.getElementById('wechat-input').parentNode;
     const wechatToolbar = document.createElement('div');
     wechatToolbar.id = 'wechat-call-toolbar';
@@ -3012,8 +3246,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const callWindow = document.createElement('div');
     callWindow.id = "wechat-call-window";
     callWindow.style.cssText = `
-        display: none; position: absolute; width: 280px; height: 400px; background: #222222; 
-        border-radius: 4px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); z-index: 9999; 
+        display: none; position: absolute; width: 280px; height: 400px; background: #222222;
+        border-radius: 4px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); z-index: 9999;
         top: 80px; left: 220px; flex-direction: column; overflow: hidden;
     `;
     callWindow.innerHTML = `
@@ -3042,12 +3276,12 @@ document.addEventListener("DOMContentLoaded", () => {
         let newTop = callWindow.offsetTop;
         let newLeft = callWindow.offsetLeft;
         const parentRect = wechatMainUI.getBoundingClientRect();
-        
+
         if (newTop < 0) newTop = 0;
         if (newLeft < 0) newLeft = 0;
         if (newTop + callWindow.offsetHeight > parentRect.height) newTop = Math.max(0, parentRect.height - callWindow.offsetHeight);
         if (newLeft + callWindow.offsetWidth > parentRect.width) newLeft = Math.max(0, parentRect.width - callWindow.offsetWidth);
-        
+
         callWindow.style.top = newTop + "px";
         callWindow.style.left = newLeft + "px";
     }
@@ -3063,16 +3297,17 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             callPos1 = callPos3 - e.clientX; callPos2 = callPos4 - e.clientY;
             callPos3 = e.clientX; callPos4 = e.clientY;
-            
+
             callWindow.style.top = (callWindow.offsetTop - callPos2) + "px";
             callWindow.style.left = (callWindow.offsetLeft - callPos1) + "px";
-            clampCallWindowBounds(); 
+            clampCallWindowBounds();
         };
     };
 
     let currentCallAudio = null;
-    let callPhaseTimeout1 = null; 
-    let callPhaseTimeout2 = null; 
+    let currentCallTargetId = null;
+    let callPhaseTimeout1 = null;
+    let callPhaseTimeout2 = null;
 
     const translateBtn = document.getElementById('wechat-call-translate-btn');
     const statusText = document.getElementById('wechat-call-status');
@@ -3092,61 +3327,70 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         clearTimeout(callPhaseTimeout1);
         clearTimeout(callPhaseTimeout2);
-        
+
         callWindow.style.display = 'none';
         translateBtn.style.display = 'none';
         statusText.style.color = '#999';
         statusText.style.fontSize = '13px';
         statusText.style.fontWeight = 'normal';
-        
+
+        const logTargetId = currentCallTargetId || activeWeChatContact;
         const now = new Date();
         const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-        wechatData[activeWeChatContact].messages.push({ 
-            time: timeStr, 
-            text: `发起视频通话，${chatLogMsg}`, 
-            isMine: true, 
-            type: 'text' 
-        });
+        if (wechatData[logTargetId] && wechatData[logTargetId].messages) {
+            wechatData[logTargetId].messages.push({
+                time: timeStr,
+                text: `发起视频通话，${chatLogMsg}`,
+                isMine: true,
+                type: 'text'
+            });
+        }
+        currentCallTargetId = null;
         saveWeChat();
-        renderWeChat(); 
+        renderWeChat();
     }
 
     document.getElementById('wechat-call-icon').onclick = function() {
         const targetId = activeWeChatContact;
         const targetData = wechatData[targetId];
         if(!targetData) return;
+        currentCallTargetId = targetId;
 
         callWindow.style.display = 'flex';
-        clampCallWindowBounds(); 
-        
+        clampCallWindowBounds();
+
         document.getElementById('wechat-call-avatar').src = targetData.avatar || 'image/image.png';
         document.getElementById('wechat-call-name').innerText = targetData.name;
         statusText.innerText = '正在等待对方接受邀请...';
-        
-        const isFakePwdTriggered = localStorage.getItem('win10_event_anmo_fake_pwd') === 'true';
 
-        if (targetId === 'yueyue' && isFakePwdTriggered) {
+        const isFakePwdTriggered = localStorage.getItem('win10_event_anmo_fake_pwd') === 'true';
+        // 摩斯密码仅在周目一、且触发了假密码事件、且尚未通过给安沫发 imfine 解开谜题时才接通;
+        // 一旦安沫对话触发(win10_event_anmo_morse)或进入周目二/三,打给月月都变成无人接听。
+        const isMorseResolved = localStorage.getItem('win10_event_anmo_morse') === 'true';
+        const canTriggerMorse = targetId === 'yueyue' && isFakePwdTriggered && !isMorseResolved && !isZhoumu2 && !isZhoumu3;
+
+        if (canTriggerMorse) {
             statusText.innerText = '已接通';
-            translateBtn.style.display = 'block'; 
-            
-            currentCallAudio = new Audio('audio/morse.wav'); 
+            translateBtn.style.display = 'block';
+
+            currentCallAudio = new Audio('audio/morse.wav');
             currentCallAudio.play().catch(e => console.log('音乐播放失败:', e));
-            
+
             currentCallAudio.onended = () => {
                 statusText.innerText = '通话已结束';
                 translateBtn.style.display = 'none';
                 callPhaseTimeout1 = setTimeout(() => {
-                    endWeChatCall("通话时长 00:15"); 
+                    endWeChatCall("通话时长 00:15");
                 }, 3000);
             };
             currentCallAudio.onerror = () => {
                 callPhaseTimeout1 = setTimeout(() => {
-                    endWeChatCall("通话时长 00:15"); 
+                    endWeChatCall("通话时长 00:15");
                 }, 15000);
             };
         } else {
             statusText.innerText = '正在等待对方接受邀请...';
-            currentCallAudio = new Audio('audio/wechat_ring.mp3'); 
+            currentCallAudio = new Audio('audio/windows-10-notify-system-sound.mp3');
             currentCallAudio.loop = true;
             currentCallAudio.play().catch(e => console.log('铃声播放失败:', e));
 

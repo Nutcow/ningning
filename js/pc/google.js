@@ -39,7 +39,7 @@
                 ];
             })()
         },
-        
+
         {
             id: 'alphabet',
             matched: ['字母表格', '字母表', 'alphabet', '密码', '加密'],
@@ -208,7 +208,7 @@
 
         if (totalItems === 0 && hasQuery) {
             box.innerHTML = `
-                <div id="_gdrop_direct" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;font-size:15px;color:#202124;" 
+                <div id="_gdrop_direct" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;font-size:15px;color:#202124;"
                     onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="2" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                     <span>${query}</span>
@@ -225,7 +225,7 @@
             histMatched.forEach((item, i) => {
                 const bold = hasQuery ? item.replace(new RegExp(`(${query})`, 'gi'), '<strong>$1</strong>') : item;
                 html += `
-                    <div data-gdrop-idx="${i}" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;font-size:15px;color:#202124;" 
+                    <div data-gdrop-idx="${i}" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;font-size:15px;color:#202124;"
                         onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="2" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                         <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${bold}</span>
@@ -324,7 +324,7 @@
         if (scrollArea) scrollArea.scrollTop = 0;
     };
 
-  
+
     window.verifyHospitalAuth = function() {
     const pwdInput = document.getElementById('hospital-pwd-input');
     const errTip = document.getElementById('hospital-pwd-error');
@@ -344,12 +344,12 @@
     window.showGoogleHospital = function() {
         document.getElementById('google-home-view').style.display = 'none';
         document.getElementById('google-result-view').style.display = 'none';
-        
+
         const alphabetView = document.getElementById('google-alphabet-view');
         if (alphabetView) alphabetView.style.display = 'none';
         const jjView = document.getElementById('google-jiangjianguo-view');
         if (jjView) jjView.style.display = 'none';
-        
+
         document.getElementById('google-hospital-view').style.display = 'flex';
         document.getElementById('google-address-text').innerText = 'mingan-hospital.gov.xyzz/report/detail';
 
@@ -374,14 +374,14 @@
     window.showGoogleJiangmingyuan = function() {
         document.getElementById('google-home-view').style.display = 'none';
         document.getElementById('google-result-view').style.display = 'none';
-        
+
         const alphabetView = document.getElementById('google-alphabet-view');
         if (alphabetView) alphabetView.style.display = 'none';
         const jjView = document.getElementById('google-jiangjianguo-view');
         if (jjView) jjView.style.display = 'none';
         const hospView = document.getElementById('google-hospital-view');
         if (hospView) hospView.style.display = 'none';
-        
+
         const jmyView = document.getElementById('google-jiangmingyuan-view');
         if (jmyView) jmyView.style.display = 'flex';
         document.getElementById('google-address-text').innerText = 'jiangmingyuan.mingan2zx.edu.xyzz';
@@ -401,17 +401,17 @@
         if (!isCorrupted) {
             setTimeout(() => {
                 const bsodAudio = new Audio('audio/windows-10-bsod-sound.mp3');
-                
+
                 bsodAudio.volume = 0;
-                
+
                 bsodAudio.onended = () => {
                     endJmyGlitchEffect();
                 };
 
                 bsodAudio.play().then(() => {
                     setTimeout(() => {
-                        bsodAudio.volume = 1.0; 
-                        startJmyGlitchEffect(); 
+                        bsodAudio.volume = 1.0;
+                        startJmyGlitchEffect();
                     }, 3000);
                 }).catch(e => {
                     console.log('音频播放被拦截:', e);
@@ -420,21 +420,21 @@
                         setTimeout(endJmyGlitchEffect, 4000);
                     }, 3000);
                 });
-            }, 800); 
+            }, 800);
         }
     };
     function updateJmyBlogState(isCorrupted) {
         const bgFilter = document.getElementById('jmy-bg-filter');
         const blogTitle = document.getElementById('jmy-blog-title');
-        
+
         const postsContainer = document.getElementById('jmy-posts-container');
         const emptyState = document.getElementById('jmy-empty-state');
         const emptyText = document.getElementById('jmy-empty-text');
-        
+
         const avatar = document.getElementById('jmy-avatar');
         const nameEl = document.getElementById('jmy-name');
         const bioEl = document.getElementById('jmy-bio');
-        
+
         const popularList = document.getElementById('jmy-popular-list');
         const popularEmpty = document.getElementById('jmy-popular-empty');
         const tagCloud = document.getElementById('jmy-tag-cloud');
@@ -446,7 +446,7 @@
                 bgFilter.style.backdropFilter = 'grayscale(100%)';
             }
             if (blogTitle) blogTitle.innerText = '个人博客';
-            
+
             if (postsContainer) postsContainer.style.display = 'none';
             if (emptyState) emptyState.style.display = 'flex';
             if (emptyText) emptyText.innerText = '这里空空如也~';
@@ -462,18 +462,18 @@
             if (popularEmpty) popularEmpty.style.display = 'block';
             if (tagCloud) tagCloud.style.display = 'none';
             if (tagEmpty) tagEmpty.style.display = 'block';
-            
+
         } else {
             if (bgFilter) {
                 bgFilter.style.background = 'transparent';
                 bgFilter.style.backdropFilter = 'none';
             }
             if (blogTitle) blogTitle.innerText = '江明远的个人博客';
-            
+
             if (postsContainer) postsContainer.style.display = 'block';
             if (emptyState) emptyState.style.display = 'none';
 
-            if (avatar) avatar.src = 'image/ming.png'; 
+            if (avatar) avatar.src = 'image/ming.webp';
             if (nameEl) {
                 nameEl.innerText = '江明远';
                 nameEl.style.color = '#333';
@@ -495,7 +495,7 @@
         @keyframes creepingDread {
             0%   { filter: brightness(0.8) contrast(1.2) grayscale(0.2); transform: translate(0,0); }
             48%  { filter: brightness(0.8) contrast(1.2) grayscale(0.2); transform: translate(0,0); }
-            50%  { filter: brightness(0.6) contrast(1.5) sepia(1) hue-rotate(315deg); transform: translate(-2px, 2px) skew(1deg); } 
+            50%  { filter: brightness(0.6) contrast(1.5) sepia(1) hue-rotate(315deg); transform: translate(-2px, 2px) skew(1deg); }
             52%  { filter: brightness(0.8) contrast(1.2) grayscale(0.2); transform: translate(0,0); }
             85%  { filter: brightness(0.8) contrast(1.2) grayscale(0.2); transform: translate(0,0); }
             87%  { filter: brightness(0.5) contrast(2.0) grayscale(0.8); transform: translate(3px, -1px) skew(-2deg); }
@@ -514,7 +514,7 @@
         @keyframes cursedImgFlicker {
             0%, 100% { filter: grayscale(0.9) contrast(1.8) brightness(0.6); transform: scale(1) rotate(calc(var(--r,0) * 1deg)); }
             10%      { filter: grayscale(1) contrast(2.5) brightness(0.8); transform: scale(1.02) rotate(calc(var(--r,0) * 1deg)); }
-            45%      { filter: sepia(1) hue-rotate(320deg) contrast(1.5) brightness(0.5) saturate(300%); } 
+            45%      { filter: sepia(1) hue-rotate(320deg) contrast(1.5) brightness(0.5) saturate(300%); }
             47%      { filter: grayscale(0.9) contrast(1.8) brightness(0.6); }
             80%      { filter: grayscale(0.8) contrast(2) brightness(0.4) invert(0.1); transform: scale(0.98) rotate(calc(var(--r,0) * 1deg)); }
         }
@@ -561,7 +561,7 @@
         }
 
         img {
-            content: url('image/ming.png') !important;
+            content: url('image/ming.webp') !important;
             width: 90px !important;
             height: 90px !important;
             object-fit: cover !important;
@@ -653,7 +653,7 @@
         }
         if (el.tagName === 'IMG' && !el.classList.contains('jmy-ming-float')) {
             el.dataset.originalSrc = el.src;
-            el.src = 'image/ming.png';
+            el.src = 'image/ming.webp';
         }
     });
 
@@ -664,7 +664,7 @@
     positions.forEach(([top, left]) => {
         const f = document.createElement('img');
         f.className = 'jmy-ming-float';
-        f.src = 'image/ming.png';
+        f.src = 'image/ming.webp';
         const size = 60 + Math.floor(Math.random() * 40);
         f.style.width  = size + 'px';
         f.style.height = size + 'px';
@@ -705,7 +705,7 @@ function endJmyGlitchEffect() {
         el.style.removeProperty('--r');
         el.style.removeProperty('--img-hue');
         if (el.tagName === 'IMG' && el.dataset.originalSrc) {
-            el.src = el.dataset.originalSrc;   
+            el.src = el.dataset.originalSrc;
             delete el.dataset.originalSrc;
         }
     });
@@ -732,10 +732,10 @@ function endJmyGlitchEffect() {
     window.showGoogleJiangjianguo = function() {
         document.getElementById('google-home-view').style.display = 'none';
         document.getElementById('google-result-view').style.display = 'none';
-        
+
         const alphabetView = document.getElementById('google-alphabet-view');
         if (alphabetView) alphabetView.style.display = 'none';
-        
+
         document.getElementById('google-jiangjianguo-view').style.display = 'flex';
         document.getElementById('google-address-text').innerText = 'mingan.edu.xyzz/teachers/jiangjianguo';
 
@@ -774,12 +774,12 @@ function endJmyGlitchEffect() {
         if (jmyView) jmyView.style.display = 'none';
         if (homeView)   homeView.style.display = 'none';
         if (alphabetView) alphabetView.style.display = 'none';
-        const jjView = document.getElementById('google-jiangjianguo-view'); 
-        if (jjView) jjView.style.display = 'none'; 
+        const jjView = document.getElementById('google-jiangjianguo-view');
+        if (jjView) jjView.style.display = 'none';
         if (resultView) resultView.style.display = 'block';
         if (navBar)     navBar.style.display = 'flex';
         if (footer)     footer.style.display = 'none';
-        
+
         if (navInput)   navInput.value = query;
         if (addrText)   addrText.innerText = 'www.google.com/search?q=' + encodeURIComponent(query);
         if (homeInput)  homeInput.value = '';
@@ -807,7 +807,7 @@ function endJmyGlitchEffect() {
             matched.results.forEach(r => {
                 const div = document.createElement('div');
                 div.style.cssText = 'margin-bottom:32px; max-width:680px;';
-                
+
                 div.innerHTML = `
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
                         <div style="width:18px;height:18px;background:#f8f9fa;border:1px solid #e8eaed;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${getFaviconSVG(r.favicon)}</div>
@@ -851,8 +851,8 @@ function endJmyGlitchEffect() {
             for (let i = 0; i < 26; i++) {
                 const letter = String.fromCharCode(65 + i);
                 gridHtml += `
-                    <div style="background: #fdfdfd; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 0; text-align: center; transition: 0.2s; cursor: default; box-shadow: 0 1px 2px rgba(0,0,0,0.02);" 
-                         onmouseover="this.style.background='#f1f3f4';this.style.borderColor='#bdc1c6';this.style.transform='translateY(-2px)';" 
+                    <div style="background: #fdfdfd; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 0; text-align: center; transition: 0.2s; cursor: default; box-shadow: 0 1px 2px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.background='#f1f3f4';this.style.borderColor='#bdc1c6';this.style.transform='translateY(-2px)';"
                          onmouseout="this.style.background='#fdfdfd';this.style.borderColor='#e0e0e0';this.style.transform='translateY(0)';">
                         <div style="font-size: 20px; font-weight: bold; color: #1a73e8; margin-bottom: 2px;">${letter}</div>
                         <div style="font-size: 15px; color: #5f6368; font-family: 'Consolas', monospace; font-weight: 500;">${i}</div>
@@ -885,7 +885,7 @@ function endJmyGlitchEffect() {
                 if (backBtn.style.cursor === 'pointer') {
                     const alphabetView = document.getElementById('google-alphabet-view');
                     if (alphabetView) alphabetView.style.display = 'none';
-                    
+
                     const jjView = document.getElementById('google-jiangjianguo-view');
                     if (jjView) jjView.style.display = 'none';
                     const hospView = document.getElementById('google-hospital-view');
@@ -895,10 +895,10 @@ function endJmyGlitchEffect() {
                     if (jmyView) jmyView.style.display = 'none';
 
                     document.getElementById('google-result-view').style.display = 'block';
-                    
+
                     const currentQuery = navInput ? navInput.value : '';
                     document.getElementById('google-address-text').innerText = 'www.google.com/search?q=' + encodeURIComponent(currentQuery);
-                    
+
                     backBtn.style.opacity = '0.35';
                     backBtn.style.cursor = 'default';
                 }

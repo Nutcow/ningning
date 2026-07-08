@@ -9,7 +9,7 @@ body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("image/野餐.png");
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("image/野餐.webp");
     background-color: #0078D7;
     background-size: cover;
     background-position: center;
@@ -22,7 +22,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("image/野餐.png");
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("image/野餐.webp");
     background-size: cover;
     background-position: center;
     z-index: 10;

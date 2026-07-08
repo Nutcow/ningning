@@ -14,8 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const minutes = String(now.getMinutes()).padStart(2, '0');
         timeDisplay.textContent = `${hours}:${minutes}`;
 
-        const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        dateDisplay.textContent = now.toLocaleDateString('en-US', options);
+        // 中文日期,如「6月15日 星期一」
+        const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        dateDisplay.textContent = `${now.getMonth() + 1}月${now.getDate()}日 ${weekdays[now.getDay()]}`;
     }
     
     updateClock();

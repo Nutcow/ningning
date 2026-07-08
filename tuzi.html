@@ -273,7 +273,7 @@ const tv=$('tv'),picture=$('picture'),flash=$('flash'),caption=$('caption'),answ
   title=$('title'),startCard=$('start'),staticEl=$('staticEl'),trackEl=$('trackEl'),
   stampEl=$('stamp'),stampGhost=$('stampGhost'),muteBtn=$('mute'),hud=$('hud'),vig=$('vig'),placeEl=$('place');
 
-let AC,master,noiseBuf,muted=false,audioOn=false,birdTimer=null;
+let AC,master,noiseBuf,muted=false,audioOn=false,birdTimer=null,rabbitAudioEnded=false;
 function initAudio(){ if(audioOn)return; try{ AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=0; master.connect(AC.destination);
   noiseBuf=AC.createBuffer(1,AC.sampleRate,AC.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
   audioOn=true; if(AC.state==='suspended')AC.resume(); ramp(master.gain,muted?0:0.6,1.2); startHiss(); }catch(e){audioOn=false;} }
@@ -288,6 +288,7 @@ function jingle(detune=1,minor=false){ if(!audioOn)return; const b=minor?[523,58
 function chirp(){ if(!audioOn||muted)return; const f=1600+Math.random()*900; note(f,0,.08,0.045,'sine'); note(f*1.18,0.09,.07,0.035,'sine'); }
 function startBirds(){ if(birdTimer||!audioOn)return; birdTimer=setInterval(()=>{ if(!muted&&Math.random()<0.55)chirp(); },950); }
 function killBirds(){ clearInterval(birdTimer); birdTimer=null; }
+function stopRabbitAudioForever(){ rabbitAudioEnded=true; killBirds(); try{ if(master&&AC){ master.gain.cancelScheduledValues(AC.currentTime); master.gain.setValueAtTime(master.gain.value,AC.currentTime); master.gain.linearRampToValueAtTime(0,AC.currentTime+0.18); } if(AC&&AC.state==='running')setTimeout(()=>AC.suspend(),220); }catch(e){} }
 function stinger(){ note(196,0,.7,0.16,'sawtooth');note(277,0,.7,0.14,'sawtooth');note(98,0,1.0,0.18,'sine'); }
 function lowThud(){ note(70,0,.5,0.2,'sine'); note(46,0,.7,0.18,'sine'); }
 function tapeStop(){ if(!audioOn)return; const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(600,AC.currentTime);o.frequency.exponentialRampToValueAtTime(40,AC.currentTime+0.8);g.gain.setValueAtTime(0.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.85);o.connect(g);g.connect(master);o.start();o.stop(AC.currentTime+0.9); }
@@ -497,7 +498,7 @@ async function run(){ if(started)return; started=true;
   try{localStorage.setItem('mr_rabbit_done','1');}catch(e){}
   await wait(500); show404();
 }
-function show404(){ try{killBirds();}catch(e){}
+function show404(){ try{stopRabbitAudioForever();}catch(e){}
   startCard.classList.add('hidden'); title.classList.remove('show'); caption.classList.remove('show'); answer.classList.remove('show');
   hud.style.display='none'; stampEl.style.display='none'; placeEl.style.display='none'; muteBtn.style.display='none';
   picture.style.display='none'; document.querySelectorAll('.crt').forEach(e=>e.style.display='none'); flash.style.display='none';
@@ -505,6 +506,21 @@ function show404(){ try{killBirds();}catch(e){}
 startCard.addEventListener('click',run);
 try{ if(localStorage.getItem('mr_rabbit_done')==='1') show404(); }catch(e){}
 window.addEventListener('keydown',e=>{ if(e.key==='r'||e.key==='R'){ try{localStorage.removeItem('mr_rabbit_done');}catch(_){} location.reload(); } });
+
+/* 父窗口(桌面)在关闭/最小化"视频"或进入结局时通知这里暂停全部声音,重新打开时恢复。
+   这样关闭视频后不会再有音乐/音效残留。 */
+window.addEventListener('message', function(ev){
+  var d = ev && ev.data;
+  if(d !== 'tuzi-audio-pause' && d !== 'tuzi-audio-resume') return;
+  try{
+    if(d === 'tuzi-audio-pause'){
+      if(typeof master!=='undefined' && master && typeof AC!=='undefined' && AC){ try{ master.gain.cancelScheduledValues(AC.currentTime); }catch(_){} }
+      if(typeof AC!=='undefined' && AC && AC.state === 'running') AC.suspend();
+    }else{
+      if(!rabbitAudioEnded && typeof AC!=='undefined' && AC && audioOn && AC.state === 'suspended') AC.resume();
+    }
+  }catch(e){}
+});
 </script>
 </body>
 </html>

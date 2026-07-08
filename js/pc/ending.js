@@ -1,6 +1,7 @@
 function startStaticEffect() {
+    if (typeof window.stopDesktopVideoAudio === 'function') window.stopDesktopVideoAudio();
     localStorage.setItem('win10_ending_reached', 'true');
-    localStorage.setItem('win10_ending_type', '1'); 
+    localStorage.setItem('win10_ending_type', '1');
 
     const canvas = document.createElement('canvas');
     canvas.id = 'static-canvas';
@@ -69,8 +70,9 @@ function startStaticEffect() {
 }
 
 function startEnding2Effect() {
+    if (typeof window.stopDesktopVideoAudio === 'function') window.stopDesktopVideoAudio();
     localStorage.setItem('win10_ending_reached', 'true');
-    localStorage.setItem('win10_ending_type', '2'); 
+    localStorage.setItem('win10_ending_type', '2');
 
     const blackBg = document.createElement('div');
     blackBg.style.cssText = `
@@ -92,6 +94,7 @@ function startEnding2Effect() {
 }
 
 function startEnding3Effect() {
+    if (typeof window.stopDesktopVideoAudio === 'function') window.stopDesktopVideoAudio();
     localStorage.setItem('win10_ending_reached', 'true');
     localStorage.setItem('win10_ending_type', '3');
 
@@ -180,13 +183,13 @@ function showEndingScreen(type = 1) {
     customImg2.style.cssText = `position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 2s ease-in-out;`;
 
     if (type == 1) {
-        customImg1.src = 'image/生日.png';
-        customImg2.src = 'image/生日2.png';
+        customImg1.src = 'image/生日.webp';
+        customImg2.src = 'image/生日2.webp';
     } else if (type == 2) {
-        customImg1.src = 'image/小时候.png';
+        customImg1.src = 'image/小时候.webp';
         customImg2.style.display = 'none';
     } else if (type == 3) {
-        customImg1.src = 'image/荡秋千.png';
+        customImg1.src = 'image/荡秋千.webp';
         customImg2.style.display = 'none';
     }
 

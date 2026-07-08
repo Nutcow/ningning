@@ -16,73 +16,73 @@
     function xhsSave() { localStorage.setItem(XHS_KEY, JSON.stringify(xhsState)); }
  
     const POSTS = [
-        { id:1, title:'没啥大本事，25岁装修100㎡小家普通却温馨', body:'关于我家：\n坐标辽宁，普通高层楼房，南北通透\n建面116平，套内93平，三室两厅一厨一卫\n房子虽然不大，但100平的小家足够两人生活，25岁时拥有装修了这个小家，如今已经住进新家第二年了。\n温馨自由舒服，无论多晚回家，都有一盏灯在为自己点亮，就足够啦\n\n装修感受：\n自己设计的家，没有找装修公司\n风格：简约, ins', imgs:['xhs/xhs7.jpg','xhs/xhs8.jpg'], author:'惠宝儿', avatar: 'xhs/xhs2.jpg', likes:18000, cat:'装修', tags:['装修日记','小户型装修','家居美学'], date:'2020-05-25', h:240 },
-        { id:2, title:'短发扎着还是披着，怎么好看怎么来！', body:'短发妹妹的日常造型分享，随手一扎就很清爽，不同场合不同风格，总有一款适合你。日常上班首选低马尾，约会首选半扎发！', imgs:['xhs/xhs15.png'], author:'无敌桃桃', avatar:'桃', likes:3627, cat:'时尚', tags:['短发','日常造型'], date:'2020-05-26', h:300 },
+        { id:1, title:'没啥大本事，25岁装修100㎡小家普通却温馨', body:'关于我家：\n坐标辽宁，普通高层楼房，南北通透\n建面116平，套内93平，三室两厅一厨一卫\n房子虽然不大，但100平的小家足够两人生活，25岁时拥有装修了这个小家，如今已经住进新家第二年了。\n温馨自由舒服，无论多晚回家，都有一盏灯在为自己点亮，就足够啦\n\n装修感受：\n自己设计的家，没有找装修公司\n风格：简约, ins', imgs:['xhs/xhs7.webp','xhs/xhs8.webp'], author:'惠宝儿', avatar: 'xhs/xhs2.webp', likes:18000, cat:'装修', tags:['装修日记','小户型装修','家居美学'], date:'2020-05-25', h:240 },
+        { id:2, title:'短发扎着还是披着，怎么好看怎么来！', body:'短发妹妹的日常造型分享，随手一扎就很清爽，不同场合不同风格，总有一款适合你。日常上班首选低马尾，约会首选半扎发！', imgs:['xhs/xhs15_png.webp'], author:'无敌桃桃', avatar:'桃', likes:3627, cat:'时尚', tags:['短发','日常造型'], date:'2020-05-26', h:300 },
         { id:3, title:'我婆婆迫不及待再来中国', body:'带婆婆走遍了北京的大街小巷，胡同、故宫、颐和园……外国人眼中的中国，比我们想象的更美丽。婆婆已经迫不及待要第二次来了！', imgs:['xhs/xhs17.jpg'], author:'张霖铃', avatar:'张', likes:27000, cat:'旅行', tags:['中国旅游','北京'], date:'2020-05-28', h:260 },
-        { id:4, title:'倪妮减肥法5天狂掉13斤 三伏天王炸食谱！', body:'三伏天减脂期间的饮食记录，低卡高蛋白，不节食不饿肚子！跟着名人食谱走，科学减肥不反弹。附详细食谱和热量表。\n\n早餐：燕麦+鸡蛋+蔬菜\n午餐：鸡胸肉+糙米\n晚餐：轻食沙拉', imgs:['xhs/xhs19.png'], author:'五十妞爱养生', avatar:'xhs/xhs37.jpg', likes:21000, cat:'美食', tags:['减肥','健康饮食','食谱'], date:'2020-06-2', h:320 },
-        { id:5, title:'全村都知道我带爷爷去北京旅游了', body:'带爷爷来北京第一次坐高铁，爷爷开心得像个孩子！在北京南站拍了好多照片，爷爷说这辈子没见过这么大的站，一定要再来一次。', imgs:['xhs/xhs16.png'], author:'唐安妮', avatar:'xhs/xhs24.jpg', likes:22000, cat:'旅行', tags:['亲情','旅行','北京'], date:'2020-06-02', h:270 },
-        { id:6, title:'从校服到婚纱八年，愿意等我长大', body:'从高中同学到人生伴侣，8年的时光见证了我们的成长。当年的校服少年，如今穿上了婚纱和礼服，感谢你一直等我长大。', imgs:['xhs/xhs14.png'], author:'kk', avatar:'xhs/xhs14.jpg', likes:20000, cat:'生活', tags:['婚纱','爱情故事'], date:'2020-05-28', h:280 },
-        { id:8, title:'小小友谊', body:'今天的任务：\n和好朋友一起吃火锅✅\n一起聊天✅\n一起开心✅\n快乐值100分！\n没有什么烦恼是一顿火锅解决不了的', imgs:['xhs/xhs18.png'], author:'月月', avatar:'image/yueyue.jpg', likes:15000, cat:'美食', tags:['火锅','好吃'], date:'2020-05-20', h:360 },
-        { id:9, title:'周末在家包饺子', body:'好久没全家一起包饺子了。\n妈妈调的三鲜馅，皮薄馅大，一口一个。\n爸爸负责擀皮，我负责把它们摆得歪歪扭扭。\n冒着热气的一盘端上桌，那一刻觉得，平平淡淡才是最幸福的事。', imgs:['xhs/xhs38.png'], author:'阿圆的小厨房', avatar:'xhs/xhs38.png', likes:8624, cat:'美食', tags:['家常菜','饺子','治愈日常'], date:'2020-05-30', h:300 },
+        { id:4, title:'倪妮减肥法5天狂掉13斤 三伏天王炸食谱！', body:'三伏天减脂期间的饮食记录，低卡高蛋白，不节食不饿肚子！跟着名人食谱走，科学减肥不反弹。附详细食谱和热量表。\n\n早餐：燕麦+鸡蛋+蔬菜\n午餐：鸡胸肉+糙米\n晚餐：轻食沙拉', imgs:['xhs/xhs19_png.webp'], author:'五十妞爱养生', avatar:'xhs/xhs37.webp', likes:21000, cat:'美食', tags:['减肥','健康饮食','食谱'], date:'2020-06-2', h:320 },
+        { id:5, title:'全村都知道我带爷爷去北京旅游了', body:'带爷爷来北京第一次坐高铁，爷爷开心得像个孩子！在北京南站拍了好多照片，爷爷说这辈子没见过这么大的站，一定要再来一次。', imgs:['xhs/xhs16_png.webp'], author:'唐安妮', avatar:'xhs/xhs24.webp', likes:22000, cat:'旅行', tags:['亲情','旅行','北京'], date:'2020-06-02', h:270 },
+        { id:6, title:'从校服到婚纱八年，愿意等我长大', body:'从高中同学到人生伴侣，8年的时光见证了我们的成长。当年的校服少年，如今穿上了婚纱和礼服，感谢你一直等我长大。', imgs:['xhs/xhs14_png.webp'], author:'kk', avatar:'xhs/xhs14_jpg.webp', likes:20000, cat:'生活', tags:['婚纱','爱情故事'], date:'2020-05-28', h:280 },
+        { id:8, title:'小小友谊', body:'今天的任务：\n和好朋友一起吃火锅✅\n一起聊天✅\n一起开心✅\n快乐值100分！\n没有什么烦恼是一顿火锅解决不了的', imgs:['xhs/xhs18.webp'], author:'月月', avatar:'image/yueyue.webp', likes:15000, cat:'美食', tags:['火锅','好吃'], date:'2020-05-20', h:360 },
+        { id:9, title:'周末在家包饺子', body:'好久没全家一起包饺子了。\n妈妈调的三鲜馅，皮薄馅大，一口一个。\n爸爸负责擀皮，我负责把它们摆得歪歪扭扭。\n冒着热气的一盘端上桌，那一刻觉得，平平淡淡才是最幸福的事。', imgs:['xhs/xhs38.webp'], author:'阿圆的小厨房', avatar:'xhs/xhs38.webp', likes:8624, cat:'美食', tags:['家常菜','饺子','治愈日常'], date:'2020-05-30', h:300 },
     ];
  
     const SEED_COMMENTS = {
         1: [
-            { id:101, user:'爱吃西柚', text:'真的九十三嘛为啥看起来这么大', avatar:'xhs/xhs.jpg', date:'2020-05-30', likes:12 },
-            { id:102, user:'惠宝儿', text:'套内93', date:'2020-05-29', likes:5, isAuthor:true, avatar:'xhs/xhs2.jpg' },
+            { id:101, user:'爱吃西柚', text:'真的九十三嘛为啥看起来这么大', avatar:'xhs/xhs.webp', date:'2020-05-30', likes:12 },
+            { id:102, user:'惠宝儿', text:'套内93', date:'2020-05-29', likes:5, isAuthor:true, avatar:'xhs/xhs2.webp' },
             { id:103, user:'橘子汽水', text:'完全看不出来才93，布局太显大了', date:'2020-05-31', likes:8, avatar:'xhs/xhs3.jpg' },
-            { id:104, user:'今天也要开心', text:'客厅真的宽敞', date:'2020-05-28', likes:3, avatar:'xhs/xhs4.jpg' },
+            { id:104, user:'今天也要开心', text:'客厅真的宽敞', date:'2020-05-28', likes:3, avatar:'xhs/xhs4.webp' },
             { id:105, user:'小熊软糖', text:'我家120都没这个视觉效果', date:'2020-06-01', likes:18 },
-            { id:106, user:'慢慢来', text:'采光也很好，看着更大', date:'2020-05-27', likes:6, avatar:'xhs/xhs5.jpg' },
-            { id:107, user:'山茶花', text:'装修风格很加分', date:'2020-05-26', likes:4, avatar:'xhs/xhs6.jpg' },
+            { id:106, user:'慢慢来', text:'采光也很好，看着更大', date:'2020-05-27', likes:6, avatar:'xhs/xhs5.webp' },
+            { id:107, user:'山茶花', text:'装修风格很加分', date:'2020-05-26', likes:4, avatar:'xhs/xhs6.webp' },
             { id:108, user:'阿白', text:'收纳做得好就显大', date:'2020-05-25', likes:5 },
             { id:109, user:'糯米团子', text:'第一眼以为130平', date:'2020-05-31', likes:14 },
         ],
         2: [
             { id:701, user:'奶茶半糖', text:'短发真的太适合夏天了', avatar:'xhs/xhs18.jpg', date:'2020-05-28', likes:67 },
-            { id:704, user:'爱zzq', text:'半扎发那个好温柔啊', avatar:'xhs/xhs19.jpg', date:'2020-06-02', likes:58 },
-            { id:705, user:'晚风', text:'终于找到适合短发的教程了', avatar:'xhs/xhs20.jpg', date:'2020-06-02', likes:42 },
-            { id:706, user:'小兔乖乖', text:'上班这样扎真的显得很利落', avatar:'xhs/xhs23.jpg', date:'2020-06-03', likes:25 },
-            { id:707, user:'草莓味汽水', text:'求出个视频版教程', avatar:'xhs/xhs22.jpg', date:'2020-06-04', likes:31 },
-            { id:708, user:'云朵棉花糖', text:'约会用这发型绝了', avatar:'xhs/xhs21.jpg', date:'2020-06-05', likes:54 },
+            { id:704, user:'爱zzq', text:'半扎发那个好温柔啊', avatar:'xhs/xhs19_jpg.webp', date:'2020-06-02', likes:58 },
+            { id:705, user:'晚风', text:'终于找到适合短发的教程了', avatar:'xhs/xhs20.webp', date:'2020-06-02', likes:42 },
+            { id:706, user:'小兔乖乖', text:'上班这样扎真的显得很利落', avatar:'xhs/xhs23.webp', date:'2020-06-03', likes:25 },
+            { id:707, user:'草莓味汽水', text:'求出个视频版教程', avatar:'xhs/xhs22.webp', date:'2020-06-04', likes:31 },
+            { id:708, user:'云朵棉花糖', text:'约会用这发型绝了', avatar:'xhs/xhs21.webp', date:'2020-06-05', likes:54 },
         ],
         3: [
-            { id:901, user:'张志豪', text:'欢迎婆婆再来中国玩！', avatar:'xhs/xhs30.jpg', date:'2020-06-02', likes:116 },
+            { id:901, user:'张志豪', text:'欢迎婆婆再来中国玩！', avatar:'xhs/xhs30.webp', date:'2020-06-02', likes:116 },
             { id:904, user:'阿豪', text:'中国好玩的地方太多了，北京只是开始', date:'2020-06-03', likes:95 },
             { id:905, user:'Wendy0918', text:'外国长辈喜欢中国美食吗？', date:'2020-06-04', likes:41 },
             { id:906, user:'周同学', text:'颐和园真的很适合带老人慢慢逛', avatar:'xhs/xhs31.jpg', date:'2020-06-04', likes:58 },
-            { id:907, user:'Eric', text:'下次可以带婆婆去西安看看', avatar:'xhs/xhs32.jpg', date:'2020-06-05', likes:63 },
+            { id:907, user:'Eric', text:'下次可以带婆婆去西安看看', avatar:'xhs/xhs32.webp', date:'2020-06-05', likes:63 },
         ],
         4: [
             { id:401, user:'减肥er', text:'跟了三天掉了2斤', date:'2020-06-04', likes:45 },
             { id:402, user:'samdy', text:'靠谱吗？有没有姐妹说下', avatar:'xhs/xhs10.jpg', date:'2020-06-02', likes:31 },
-            { id:403, user:'柠檬不酸', text:'跟着吃了两天，状态不错', avatar:'xhs/xhs11.jpg', date:'2020-06-05', likes:34 },
-            { id:404, user:'减肥成功版', text:'先收藏，等三伏天开始跟', avatar:'xhs/xhs12.jpg', date:'2020-06-03', likes:12 },
+            { id:403, user:'柠檬不酸', text:'跟着吃了两天，状态不错', avatar:'xhs/xhs11.webp', date:'2020-06-05', likes:34 },
+            { id:404, user:'减肥成功版', text:'先收藏，等三伏天开始跟', avatar:'xhs/xhs12.webp', date:'2020-06-03', likes:12 },
         ],
         5: [
             { id:801, user:'陈同学', text:'爷爷笑得好开心，看着好治愈', avatar:'xhs/xhs25.jpg', date:'2020-06-02', likes:128 },
-            { id:802, user:'安安', text:'一定要多带老人家出去看看世界', avatar:'xhs/xhs26.jpg', date:'2020-06-02', likes:96 },
-            { id:804, user:'Kevin', text:'看到爷爷开心我也跟着开心了', avatar:'xhs/xhs27.jpg',date:'2020-06-03', likes:88 },
-            { id:806, user:'小泽', text:'爷爷有你这样的孙女真幸福', avatar:'xhs/xhs28.jpg', date:'2020-06-04', likes:142 },
-            { id:807, user:'沈小溪', text:'看得我也想带我爷爷出去玩了', avatar:'xhs/xhs29.jpg', date:'2020-06-05', likes:67 },
+            { id:802, user:'安安', text:'一定要多带老人家出去看看世界', avatar:'xhs/xhs26.webp', date:'2020-06-02', likes:96 },
+            { id:804, user:'Kevin', text:'看到爷爷开心我也跟着开心了', avatar:'xhs/xhs27.webp',date:'2020-06-03', likes:88 },
+            { id:806, user:'小泽', text:'爷爷有你这样的孙女真幸福', avatar:'xhs/xhs28.webp', date:'2020-06-04', likes:142 },
+            { id:807, user:'沈小溪', text:'看得我也想带我爷爷出去玩了', avatar:'xhs/xhs29.webp', date:'2020-06-05', likes:67 },
             { id:808, user:'阿哲', text:'这种陪伴比什么礼物都珍贵', date:'2020-06-05', likes:103 },
         ],
         6: [
-            { id:701, user:'幸福的人', text:'好甜啊！祝你们百年好合！', avatar:'xhs/xhs13.jpg', date:'2020-05-28', likes:67 },
+            { id:701, user:'幸福的人', text:'好甜啊！祝你们百年好合！', avatar:'xhs/xhs13.webp', date:'2020-05-28', likes:67 },
             { id:702, user:'羡慕', text:'8年！真的太感动了', date:'2020-05-28', likes:89 },
-            { id:703, user:'macyc', text:'一定要一直幸福下去呀', avatar:'xhs/xhs15.jpg',date:'2020-06-01', likes:36 },
-            { id:704, user:'糖果超甜', text:'这组婚纱照拍得真好看', avatar:'xhs/xhs16.jpg',date:'2020-06-02', likes:58 },
+            { id:703, user:'macyc', text:'一定要一直幸福下去呀', avatar:'xhs/xhs15_jpg.webp',date:'2020-06-01', likes:36 },
+            { id:704, user:'糖果超甜', text:'这组婚纱照拍得真好看', avatar:'xhs/xhs16_jpg.webp',date:'2020-06-02', likes:58 },
         ],
         8: [
-            { id:701, user:'Kiki', text:'快乐就是和朋友一起炫火锅', avatar:'xhs/xhs36.jpg', date:'2020-05-28', likes:67 },
-            { id:702, user:'周周', text:'聊天配火锅简直满分组合', avatar:'xhs/xhs35.jpg', date:'2020-05-28', likes:89 },
-            { id:703, user:'Yuki', text:'这样的友谊真的很舒服', avatar:'xhs/xhs34.jpg', date:'2020-06-01', likes:36 },
-            { id:704, user:'阿豪', text:'看得我也想约朋友吃火锅了', avatar:'xhs/xhs33.jpg', date:'2020-06-02', likes:58 },
+            { id:701, user:'Kiki', text:'快乐就是和朋友一起炫火锅', avatar:'xhs/xhs36.webp', date:'2020-05-28', likes:67 },
+            { id:702, user:'周周', text:'聊天配火锅简直满分组合', avatar:'xhs/xhs35.webp', date:'2020-05-28', likes:89 },
+            { id:703, user:'Yuki', text:'这样的友谊真的很舒服', avatar:'xhs/xhs34.webp', date:'2020-06-01', likes:36 },
+            { id:704, user:'阿豪', text:'看得我也想约朋友吃火锅了', avatar:'xhs/xhs33.webp', date:'2020-06-02', likes:58 },
         ],
         9: [
-            { id:910, user:'小满', text:'三鲜馅yyds！看饿了', avatar:'xhs/xhs4.jpg', date:'2020-05-31', likes:21 },
-            { id:911, user:'今天也要开心', text:'一家人一起包饺子的感觉真好', avatar:'xhs/xhs5.jpg', date:'2020-05-31', likes:33 },
-            { id:912, user:'橘子汽水', text:'歪歪扭扭的最可爱啦', avatar:'xhs/xhs6.jpg', date:'2020-06-01', likes:9 },
+            { id:910, user:'小满', text:'三鲜馅yyds！看饿了', avatar:'xhs/xhs4.webp', date:'2020-05-31', likes:21 },
+            { id:911, user:'今天也要开心', text:'一家人一起包饺子的感觉真好', avatar:'xhs/xhs5.webp', date:'2020-05-31', likes:33 },
+            { id:912, user:'橘子汽水', text:'歪歪扭扭的最可爱啦', avatar:'xhs/xhs6.webp', date:'2020-06-01', likes:9 },
             { id:913, user:'阿白', text:'突然好想家', date:'2020-06-02', likes:46 },
         ]
     };
@@ -104,7 +104,7 @@
 
     const CURRENT_USER = {
         name: '宁宁',
-        avatar: 'image/ningning.jpg'
+        avatar: 'image/ningning.webp'
     };
 
     const AVATAR_COLORS = ['#ff2442','#ff7043','#ab47bc','#42a5f5','#26a69a','#e91e63','#ff8f00'];

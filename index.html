@@ -5,22 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>登入</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        // 尽早根据周目在 <html> 上打主题类,让壁纸首帧就正确,避免刷新时闪出上一周目/默认壁纸
+        (function(){
+            try{
+                var c = document.documentElement.classList;
+                if (localStorage.getItem('win10_zhoumu3') === 'true') c.add('zhoumu3');
+                else if (localStorage.getItem('win10_zhoumu2') === 'true') c.add('zhoumu2');
+            }catch(e){}
+        })();
+    </script>
     <style>
-        body.zhoumu2 {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('image/野餐2.png') no-repeat center center !important;
+        html.zhoumu2 body {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('image/野餐2.webp') no-repeat center center !important;
             background-size: cover !important;
         }
-        body.zhoumu2 .lockscreen {
-            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('image/野餐2.png') no-repeat center center !important;
+        html.zhoumu2 .lockscreen {
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('image/野餐2.webp') no-repeat center center !important;
             background-size: cover !important;
         }
 
-        body.zhoumu3 {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('image/野餐3.png') no-repeat center center !important;
+        html.zhoumu3 body {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('image/野餐3.webp') no-repeat center center !important;
             background-size: cover !important;
         }
-        body.zhoumu3 .lockscreen {
-            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('image/野餐3.png') no-repeat center center !important;
+        html.zhoumu3 .lockscreen {
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('image/野餐3.webp') no-repeat center center !important;
             background-size: cover !important;
         }
     </style>
@@ -228,13 +238,13 @@
     <div class="lockscreen" id="lockscreen">
         <div class="lockscreen-content">
             <div class="time" id="time">00:00</div>
-            <div class="date" id="date">Loading...</div>
+            <div class="date" id="date">加载中...</div>
         </div>
         <div class="tip">点击任意地方解锁</div>
     </div>
 
     <div class="login-screen">
-        <img src="image/ningning.jpg" class="avatar" id="user-avatar" alt="用户头像">
+        <img src="image/ningning.webp" class="avatar" id="user-avatar" alt="用户头像">
 
         <div class="username" id="user-name">江若宁</div>
 
