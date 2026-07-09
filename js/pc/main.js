@@ -3103,6 +3103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let z3VideoEventsBound = false;
     let z3VideoFallbackTimer = null;
     let z3VideoFailed = false;
+    let z3VideoBlobUrl = null;
 
     function getZ3VideoEls() {
         return {
@@ -3142,9 +3143,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function ensureZ3VideoSource() {
         const video = document.getElementById('z3-complete-video');
         if (!video) return null;
-        if (video.getAttribute('src') !== Z3_COMPLETE_VIDEO_SRC) {
-            video.setAttribute('src', Z3_COMPLETE_VIDEO_SRC);
-            video.load();
+        // 优先用后台已预缓存好的 blob(整段在内存里 → 播放不卡);否则用网络地址边下边播。
+        // 若出过错(如后台预缓存中断,网络恢复后重试)也重新加载。
+        const src = z3VideoBlobUrl || Z3_COMPLETE_VIDEO_SRC;
+        if (video.getAttribute('src') !== src || video.error) {
+            video.setAttribute('src', src);
+            try { video.load(); } catch (e) {}
         }
         return video;
     }
@@ -3189,10 +3193,37 @@ document.addEventListener("DOMContentLoaded", () => {
         z3VideoPreloadStarted = true;
         bindZ3VideoEvents();
         bindZ3PlayButton();
-        // 不在页面加载时就整包下载 4.7MB 视频。国内网络不稳定时,一次性 fetch 整个 blob
-        // 是"全有或全无",中途断线就前功尽弃,还会和其它资源抢带宽。
-        // 改为打开"电影和电视"时用 <video src> 边下边播(浏览器原生支持断点续传/渐进播放),
-        // 加载失败或 8 秒仍无法开始播放则回退到 tuzi 互动动画,避免卡关。
+
+        // 后台低优先级预缓存:周目三进桌面后,延迟到首屏资源加载完再开始,趁玩家在桌面里
+        // 操作时用 fetch 把整段视频(约3MB)悄悄下到内存,完成后作为 blob 源挂给 <video>。
+        // 注意:<video preload="auto"> 对暂停中的视频只缓冲很少一段(实测约8%),不足以流畅播放,
+        // 所以这里用 fetch 整包下载来保证打开"电影和电视"时能直接从内存流畅播放,不卡。
+        // 不阻塞任何操作;省流量模式(Data Saver)下不预下;未下完/失败时仍走网络流式播放,
+        // 再不行由 error 事件 / 看门狗回退到 tuzi。
+        const warmUp = () => {
+            if (!window.fetch || z3VideoBlobUrl) return;
+            if (localStorage.getItem(Z3_COMPLETE_VIDEO_DONE_KEY) === 'true') return;
+            const conn = navigator.connection || navigator.webkitConnection;
+            if (conn && conn.saveData) return;                 // 省流量模式:不预下
+            const video = document.getElementById('z3-complete-video');
+            if (!video || video.getAttribute('src')) return;   // 已在下/已打开APP则不重复(避免双重下载)
+            fetch(Z3_COMPLETE_VIDEO_SRC, { cache: 'force-cache' })
+                .then(res => res.ok ? res.blob() : null)
+                .then(blob => {
+                    if (!blob) return;
+                    z3VideoBlobUrl = URL.createObjectURL(blob);
+                    const v = document.getElementById('z3-complete-video');
+                    // 仅在玩家还没开始播放时把源换成内存 blob,避免打断正在进行的播放
+                    if (v && v.dataset.playStarted !== 'true' && localStorage.getItem(Z3_COMPLETE_VIDEO_DONE_KEY) !== 'true') {
+                        v.setAttribute('src', z3VideoBlobUrl);
+                        try { v.load(); } catch (e) {}
+                    }
+                })
+                .catch(() => {});
+        };
+        const schedule = () => setTimeout(warmUp, 4000);       // 延迟 4s,避开首屏资源抢带宽
+        if (document.readyState === 'complete') schedule();
+        else window.addEventListener('load', schedule, { once: true });
     }
 
     function pauseZ3CompleteVideo() {
