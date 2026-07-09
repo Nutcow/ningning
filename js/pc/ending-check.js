@@ -6,7 +6,7 @@
                 document.body.style.transition = 'background 1s ease';
                 document.body.style.background = '#000';
                 document.body.style.overflow = 'hidden';
-                showEndingScreen(type);
+                showEndingScreen(type, true);
             } else {
                 setTimeout(tryShowEnding, 100);
             }

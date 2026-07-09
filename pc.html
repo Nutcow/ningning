@@ -63,20 +63,6 @@
             <div class="icon-text">每日新闻</div>
         </div>
 
-        <div class="desktop-icon" id="icon-pdfviewer" data-app="pdfviewer" style="display: none; top: 415px; left: 95px;">
-            <div class="icon-img">
-                <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 2h22l8 8v28H6V2z" fill="#E53935"/>
-                    <path d="M28 2l8 8h-8V2z" fill="#B71C1C"/>
-                    <rect x="12" y="16" width="16" height="3" rx="1.5" fill="white" fill-opacity="0.9"/>
-                    <rect x="12" y="22" width="16" height="3" rx="1.5" fill="white" fill-opacity="0.9"/>
-                    <rect x="12" y="28" width="12" height="3" rx="1.5" fill="white" fill-opacity="0.9"/>
-                    <text x="10" y="8" font-family="'Segoe UI', sans-serif" font-size="6" font-weight="bold" fill="white">PDF</text>
-                </svg>
-            </div>
-            <div class="icon-text">20200615.pdf</div>
-        </div>
-
         <div class="desktop-icon" id="icon-hospitalpdf" data-app="hospitalpdf" style="display: none; top: 515px; left: 175px;">
             <div class="icon-img">
                 <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -1280,6 +1266,183 @@
                         </div>
                     </div>
 
+                    <div id="google-vigenere-view" style="display:none; background:#f6f6f6; min-height:100%; box-sizing:border-box;">
+                        <style>
+                            #google-vigenere-view { font-family: -apple-system, 'Helvetica Neue', 'Segoe UI', Arial, 'Microsoft YaHei', sans-serif; color:#202122; }
+                            #google-vigenere-view a { color:#3366cc; text-decoration:none; }
+                            #google-vigenere-view a:hover { text-decoration:underline; }
+                            #google-vigenere-view a.vg-red { color:#ba0000; }
+                            .vg-wrap { display:flex; align-items:flex-start; max-width:1100px; margin:0 auto; }
+                            .vg-sidebar { width:150px; flex-shrink:0; padding:12px 10px 40px; box-sizing:border-box; font-size:12.6px; }
+                            .vg-logo-box { text-align:center; margin-bottom:14px; }
+                            .vg-logo-sub { font-size:12px; color:#54595d; font-family:Georgia,serif; margin-top:4px; line-height:1.35; }
+                            .vg-nav-h { color:#54595d; font-size:11px; font-weight:normal; padding:4px 6px; border-bottom:1px solid #eee; margin-top:10px; }
+                            .vg-nav-ul { list-style:none; margin:0; padding:4px 0 4px 6px; }
+                            .vg-nav-ul li { padding:3px 0; line-height:1.35; }
+                            .vg-content { flex:1; min-width:0; background:#fff; border:1px solid #a7d7f9; border-top:none; padding:0 18px 28px; box-sizing:border-box; }
+                            .vg-tabs-top { display:flex; gap:1px; font-size:12.6px; padding-top:6px; }
+                            .vg-tabs-top .vg-tab { padding:8px 12px 6px; background:#fff; border:1px solid #a7d7f9; border-bottom:none; color:#3366cc; }
+                            .vg-tabs-top .vg-tab.on { color:#202122; border-top:2px solid #fff; margin-top:-1px; font-weight:normal; }
+                            .vg-tabs-actions { text-align:right; font-size:12.6px; padding:6px 0 2px; color:#54595d; border-bottom:1px solid #a2a9b1; }
+                            .vg-tabs-actions span { padding:0 8px; color:#3366cc; cursor:default; }
+                            .vg-tabs-actions span.on { color:#202122; font-weight:bold; }
+                            #google-vigenere-view h1.vg-title { font-family:'Linux Libertine','Georgia','Times New Roman',serif; font-size:28px; font-weight:normal; border-bottom:1px solid #a2a9b1; margin:14px 0 2px; padding-bottom:4px; line-height:1.3; }
+                            .vg-fromwiki { font-size:12.6px; color:#54595d; margin-bottom:14px; }
+                            #google-vigenere-view h2 { font-family:'Linux Libertine','Georgia','Times New Roman',serif; font-size:22px; font-weight:normal; border-bottom:1px solid #a2a9b1; margin:22px 0 8px; padding-bottom:3px; }
+                            #google-vigenere-view h3 { font-size:16px; font-weight:bold; margin:16px 0 6px; }
+                            #google-vigenere-view p { font-size:14px; line-height:1.7; margin:0 0 12px; }
+                            .vg-toc { display:inline-block; background:#f8f9fa; border:1px solid #a2a9b1; padding:8px 18px 10px; margin:6px 0 16px; font-size:13px; }
+                            .vg-toc-h { text-align:center; font-weight:bold; font-size:13px; margin-bottom:6px; }
+                            .vg-toc ol { margin:0; padding-left:22px; }
+                            .vg-toc ol li { padding:2px 0; }
+                            .vg-toc ol { counter-reset:none; }
+                            .vg-infobox { float:right; width:250px; margin:6px 0 14px 18px; border:1px solid #a2a9b1; background:#f8f9fa; font-size:12.6px; border-collapse:collapse; }
+                            .vg-infobox caption { background:#ccccff; font-weight:bold; padding:6px; font-size:14px; }
+                            .vg-infobox th, .vg-infobox td { border-top:1px solid #eaecf0; padding:5px 8px; text-align:left; vertical-align:top; line-height:1.5; }
+                            .vg-infobox th { color:#54595d; font-weight:bold; white-space:nowrap; width:78px; }
+                            .vg-infobox .vg-ib-sub { background:#ccf; text-align:center; font-weight:bold; }
+                            .vg-formula { background:#f8f9fa; border:1px solid #eaecf0; border-left:3px solid #a2a9b1; padding:10px 14px; margin:0 0 14px; font-family:'Cambria Math','Times New Roman',serif; font-size:15px; line-height:1.9; }
+                            .vg-example { font-family:'Consolas','Courier New',monospace; font-size:14px; line-height:1.7; background:#f8f9fa; border:1px solid #eaecf0; padding:12px 14px; margin:0 0 14px; letter-spacing:2px; }
+                            .vg-example b { color:#b32424; }
+                            .vg-square-scroll { overflow-x:auto; margin:0 0 6px; border:1px solid #eaecf0; }
+                            .vg-square-table { border-collapse:collapse; font-family:'Consolas','Courier New',monospace; font-size:11px; }
+                            .vg-square-table th, .vg-square-table td { width:19px; height:19px; text-align:center; border:1px solid #e4e6eb; padding:0; }
+                            .vg-square-table thead th, .vg-square-table .vg-rowhead { background:#eaecf0; font-weight:bold; color:#202122; position:sticky; }
+                            .vg-square-table thead th { top:0; }
+                            .vg-square-table .vg-corner { background:#c8ccd1; }
+                            .vg-square-table td.vg-diag { background:#fff1c9; font-weight:bold; }
+                            .vg-square-table tbody td { color:#54595d; }
+                            .vg-cap { font-size:12px; color:#54595d; margin:0 0 16px; }
+                            @media (max-width:640px) { .vg-sidebar { display:none; } .vg-infobox { float:none; width:auto; margin:0 0 14px; } }
+                        </style>
+
+                        <div class="vg-wrap">
+                            <div class="vg-sidebar">
+                                <div class="vg-logo-box">
+                                    <svg viewBox="0 0 100 100" width="86" height="86" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="50" cy="50" r="44" fill="#fff" stroke="#c8ccd1" stroke-width="1.4"/>
+                                        <g fill="none" stroke="#c8ccd1" stroke-width="1">
+                                            <ellipse cx="50" cy="50" rx="44" ry="15"/>
+                                            <ellipse cx="50" cy="50" rx="44" ry="30"/>
+                                            <ellipse cx="50" cy="50" rx="15" ry="44"/>
+                                            <ellipse cx="50" cy="50" rx="30" ry="44"/>
+                                            <line x1="6" y1="50" x2="94" y2="50"/>
+                                            <line x1="50" y1="6" x2="50" y2="94"/>
+                                        </g>
+                                        <g fill="#54595d" font-family="serif" font-size="12" text-anchor="middle">
+                                            <text x="50" y="26">W</text>
+                                            <text x="29" y="47">Ω</text>
+                                            <text x="71" y="47">い</text>
+                                            <text x="33" y="72">Я</text>
+                                            <text x="67" y="72">א</text>
+                                            <text x="50" y="61">維</text>
+                                        </g>
+                                        <path d="M70 20 l11 -3 -3 11 z" fill="#f6f6f6" stroke="#c8ccd1" stroke-width="0.8"/>
+                                    </svg>
+                                    <div class="vg-logo-sub"><b>WIKIPEDIA</b><br>自由的百科全书</div>
+                                </div>
+                                <div class="vg-nav-h">导航</div>
+                                <ul class="vg-nav-ul">
+                                    <li><a href="#">首页</a></li>
+                                    <li><a href="#">分类索引</a></li>
+                                    <li><a href="#">特色内容</a></li>
+                                    <li><a href="#">新闻动态</a></li>
+                                    <li><a href="#">最近更改</a></li>
+                                    <li><a href="#">随机条目</a></li>
+                                </ul>
+                                <div class="vg-nav-h">帮助</div>
+                                <ul class="vg-nav-ul">
+                                    <li><a href="#">帮助</a></li>
+                                    <li><a href="#">维基社群</a></li>
+                                    <li><a href="#">方针与指引</a></li>
+                                    <li><a href="#">互助客栈</a></li>
+                                </ul>
+                                <div class="vg-nav-h">工具</div>
+                                <ul class="vg-nav-ul">
+                                    <li><a href="#">链入页面</a></li>
+                                    <li><a href="#">相关更改</a></li>
+                                    <li><a href="#">特殊页面</a></li>
+                                    <li><a href="#">打印版本</a></li>
+                                    <li><a href="#">固定链接</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="vg-content">
+                                <div class="vg-tabs-top">
+                                    <div class="vg-tab on">条目</div>
+                                    <div class="vg-tab">讨论</div>
+                                </div>
+                                <div class="vg-tabs-actions">
+                                    <span class="on">阅读</span><span>编辑</span><span>查看历史</span>
+                                </div>
+
+                                <h1 class="vg-title">维吉尼亚密码</h1>
+                                <div class="vg-fromwiki">维基百科，自由的百科全书</div>
+
+                                <table class="vg-infobox">
+                                    <caption>维吉尼亚密码</caption>
+                                    <tr><td class="vg-ib-sub" colspan="2">Chiffre de Vigenère</td></tr>
+                                    <tr><th>类型</th><td>多表代换密码</td></tr>
+                                    <tr><th>提出者</th><td>吉奥万·巴蒂斯塔·贝拉索（1553年）</td></tr>
+                                    <tr><th>命名来源</th><td>布莱斯·德·维吉尼亚</td></tr>
+                                    <tr><th>密钥</th><td>一个关键词（循环使用）</td></tr>
+                                    <tr><th>首次破解</th><td>1863年，卡西斯基试验</td></tr>
+                                    <tr><th>相关密码</th><td><a href="#">凯撒密码</a>、<a href="#">一次性密码本</a></td></tr>
+                                </table>
+
+                                <p><b>维吉尼亚密码</b>（法语：<i>Chiffre de Vigenère</i>，英语：<i>Vigenère cipher</i>）是使用一系列<a href="#">凯撒密码</a>组成密码字母表的加密算法，属于<a href="#">多表密码</a>（polyalphabetic cipher）的一种简单形式。它需要一个<b>关键词</b>（即<b>密钥</b>）作为逐位移位的依据。</p>
+
+                                <p>维吉尼亚密码以其表面上的抗<a href="#">频率分析</a>能力而闻名，在数个世纪内被认为无法破解，因而得名「<i>le chiffre indéchiffrable</i>」（法语意为「无法破译的密码」）。这种密码虽然容易理解和实现，但直到1863年才被弗里德里希·卡西斯基完全破解。</p>
+
+                                <div class="vg-toc">
+                                    <div class="vg-toc-h">目录</div>
+                                    <ol>
+                                        <li><a href="#">历史</a></li>
+                                        <li><a href="#">加密方法</a></li>
+                                        <li><a href="#">维吉尼亚方阵</a></li>
+                                        <li><a href="#">加密示例</a></li>
+                                        <li><a href="#">解密</a></li>
+                                        <li><a href="#">密码分析</a></li>
+                                    </ol>
+                                </div>
+
+                                <h2>历史</h2>
+                                <p>这种密码最早记载于1553年吉奥万·巴蒂斯塔·贝拉索（Giovan Battista Bellaso）所著的一本小册子中。然而在19世纪，它被误认为是法国外交官<b>布莱斯·德·维吉尼亚</b>（Blaise de Vigenère，1523－1596）所发明，因此得名「维吉尼亚密码」。维吉尼亚本人实际上于1586年提出的是一种更为复杂的<a href="#">自动密钥密码</a>。</p>
+
+                                <h2>加密方法</h2>
+                                <p>维吉尼亚密码的加密以一个关键词（密钥）为基础。首先将密钥重复书写，使其长度与明文相同；随后依照每个位置上的密钥字母，对相应的明文字母进行凯撒式移位。</p>
+                                <p>若把字母 A－Z 依次对应数字 0－25，则加密与解密可用同余式表示（其中 <i>P</i> 为明文，<i>K</i> 为密钥，<i>C</i> 为密文）：</p>
+                                <div class="vg-formula">
+                                    加密：C<sub>i</sub> = ( P<sub>i</sub> + K<sub>i</sub> ) mod 26<br>
+                                    解密：P<sub>i</sub> = ( C<sub>i</sub> − K<sub>i</sub> + 26 ) mod 26
+                                </div>
+
+                                <h2>维吉尼亚方阵</h2>
+                                <p>实际操作中，通常借助<b>维吉尼亚方阵</b>（又称 <i>tabula recta</i>）来完成加解密。方阵最上一行为<b>明文字母</b>，最左一列为<b>密钥字母</b>；二者交叉处的字母即为对应的<b>密文</b>。</p>
+                                <div class="vg-square-scroll">
+                                    <div id="google-vigenere-square"></div>
+                                </div>
+                                <p class="vg-cap">↑ 26 × 26 维吉尼亚方阵。对角线（黄色）为字母表本身。</p>
+
+                                <h2>加密示例</h2>
+                                <p>以明文 ATTACKATDAWN、密钥 LEMON 为例，先将密钥循环补齐至与明文等长，再逐位相加：</p>
+                                <div class="vg-example">
+                                    明文：A T T A C K A T D A W N<br>
+                                    密钥：L E M O N L E M O N L E<br>
+                                    密文：<b>L X F O P V E F R N H R</b>
+                                </div>
+                                <p>例如第一个字母 <b>A</b>，其对应的密钥字母为 <b>L</b>：在方阵中沿 <b>A</b> 列向下、<b>L</b> 行向右，交叉处得到密文 <b>L</b>。其余各位以此类推。</p>
+
+                                <h2>解密</h2>
+                                <p>解密时，先在方阵中找到<b>密钥字母</b>所在的那一行，在该行内找到<b>密文字母</b>，其所在<b>列</b>顶端的字母即为明文。以上例反推：在密钥 <b>L</b> 行中找到密文 <b>L</b>，其所在列的表头为 <b>A</b>，即还原出明文首字母 <b>A</b>。</p>
+
+                                <h2>密码分析</h2>
+                                <p>1863年，普鲁士军官<b>弗里德里希·卡西斯基</b>首次公开了一种系统的破解方法（<a href="#">卡西斯基试验</a>）。其核心在于：只要密钥长度短于明文并被循环使用，密文中就会出现由「相同明文片段 + 相同密钥片段」产生的重复串，而这些重复串之间的间距往往是<b>密钥长度</b>的倍数。一旦推断出密钥长度，便可将密文按密钥长度分组，每一组都相当于一个单表的凯撒密码，从而用<a href="#">频率分析</a>逐一破解。</p>
+                                <p style="font-size:12px;color:#72777d;border-top:1px solid #eaecf0;padding-top:10px;">本条目最后修订于2020年5月。 · 文字采用<a href="#">知识共享 署名-相同方式共享</a>协议授权。</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="google-jiangjianguo-view" style="width: 100%; min-height: 100vh; background-color: #e9ecef; font-family: SimSun, 'Songti SC', 'Microsoft YaHei', sans-serif; display: flex; justify-content: center; padding: 20px 0; box-sizing: border-box;">
                 <style>
                     #google-jiangjianguo-view * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1892,190 +2055,6 @@
 </div>
         </div>
 
-        <div class="window" id="win-pdfviewer" data-app="pdfviewer" style="width:900px; height:650px; background:#323232; border-color:#111;">
-            <div class="title-bar" style="background:#1f1f1f; border-bottom:1px solid #111;">
-                <div class="title-text" id="pdf-titlebar-text" style="color:#fff; display:flex; align-items:center; gap:8px;">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;">
-                        <rect x="1" y="1" width="14" height="14" rx="1.5" fill="#e8584b"/>
-                        <rect x="3" y="5" width="10" height="1.5" rx="0.5" fill="#fff"/>
-                        <rect x="3" y="8" width="10" height="1.5" rx="0.5" fill="#fff"/>
-                        <rect x="3" y="11" width="7" height="1.5" rx="0.5" fill="#fff"/>
-                    </svg>
-                    20200615.pdf - Adobe Acrobat Reader DC
-                </div>
-                <div class="window-controls">
-                    <button class="btn-min" data-app="pdfviewer" style="color:#fff;">—</button>
-                    <button class="btn-max" data-app="pdfviewer" style="color:#fff;">▢</button>
-                    <button class="btn-close" data-app="pdfviewer" style="color:#fff;">✕</button>
-                </div>
-            </div>
-            <div style="height:40px; background:#2b2b2b; border-bottom:1px solid #111; display:flex; align-items:center; padding:0 12px; gap:4px; flex-shrink:0; user-select:none;">
-            <button title="打开" style="width:30px;height:28px;background:transparent;border:1px solid transparent;color:#ccc;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-            </button>
-            <button title="打印" style="width:30px;height:28px;background:transparent;border:1px solid transparent;color:#ccc;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            </button>
-            <div style="width:1px;height:20px;background:#555;margin:0 4px;"></div>
-            <button id="pdf-prev-btn" title="上一页" onclick="pdfChangePage(-1)" style="width:28px;height:28px;background:transparent;border:1px solid transparent;color:#ccc;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <input id="pdf-page-input" type="text" value="1" onchange="pdfJumpToPage(this.value)" style="width:34px;height:22px;background:#1a1a1a;border:1px solid #555;color:#fff;text-align:center;font-size:12px;outline:none;font-family:'Segoe UI',sans-serif;">
-            <span style="color:#aaa;font-size:12px;margin-left:3px;">/ <span id="pdf-total-pages">4</span></span>
-            <button id="pdf-next-btn" title="下一页" onclick="pdfChangePage(1)" style="width:28px;height:28px;background:transparent;border:1px solid transparent;color:#ccc;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <div style="width:1px;height:20px;background:#555;margin:0 4px;"></div>
-            <button onclick="pdfChangeZoom(-10)" title="缩小" style="width:28px;height:28px;background:transparent;border:1px solid transparent;color:#ccc;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-            </button>
-            <span id="pdf-zoom-label" style="color:#ccc;font-size:12px;min-width:38px;text-align:center;">100%</span>
-            <button onclick="pdfChangeZoom(10)" title="放大" style="width:28px;height:28px;background:transparent;border:1px solid transparent;color:#ccc;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-            </button>
-            <button onclick="pdfFitWidth()" title="适合页面" style="width:28px;height:28px;background:transparent;border:1px solid transparent;color:#ccc;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-            </button>
-            <div style="flex:1;"></div>
-            <div style="display:flex;align-items:center;gap:5px;color:#888;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:2px;" onmouseover="this.style.background='#3d3d3d'" onmouseout="this.style.background='transparent'">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                搜索文档
-            </div>
-    </div>
-
-    <div style="display:flex;flex:1;overflow:hidden;background:#323232;">
-
-        <div id="pdf-sidebar" style="width:116px;background:#1e1e1e;border-right:1px solid #111;overflow-y:auto;flex-shrink:0;padding:10px 8px;display:flex;flex-direction:column;gap:10px;">
-            <div class="pdf-thumb" id="pdf-thumb-1" onclick="pdfGoToPage(1)" style="border:2px solid #0078d7;cursor:pointer;border-radius:2px;overflow:hidden;position:relative;">
-                <div style="width:100%;aspect-ratio:210/297;background:#fff;display:flex;align-items:center;justify-content:center;">
-                    <svg width="50" height="60" viewBox="0 0 50 60"><rect x="10" y="25" width="30" height="2" fill="#ccc"/><rect x="15" y="30" width="20" height="1.5" fill="#ccc"/></svg>
-                </div>
-                <div style="position:absolute;bottom:0;width:100%;text-align:center;font-size:10px;color:#aaa;background:rgba(0,0,0,0.5);padding:1px 0;font-family:'Segoe UI',sans-serif;">1</div>
-            </div>
-            <div class="pdf-thumb" id="pdf-thumb-2" onclick="pdfGoToPage(2)" style="border:2px solid transparent;cursor:pointer;border-radius:2px;overflow:hidden;position:relative;">
-                <div style="width:100%;aspect-ratio:210/297;background:#fff;display:flex;align-items:center;justify-content:center;">
-                    <svg width="50" height="60" viewBox="0 0 50 60"><rect x="5" y="10" width="40" height="1.5" fill="#ddd"/><rect x="5" y="15" width="40" height="1.5" fill="#ddd"/><rect x="5" y="20" width="30" height="1.5" fill="#ddd"/></svg>
-                </div>
-                <div style="position:absolute;bottom:0;width:100%;text-align:center;font-size:10px;color:#aaa;background:rgba(0,0,0,0.5);padding:1px 0;font-family:'Segoe UI',sans-serif;">2</div>
-            </div>
-            <div class="pdf-thumb" id="pdf-thumb-3" onclick="pdfGoToPage(3)" style="border:2px solid transparent;cursor:pointer;border-radius:2px;overflow:hidden;position:relative;">
-                <div style="width:100%;aspect-ratio:210/297;background:#fff;display:flex;align-items:center;justify-content:center;">
-                    <svg width="50" height="60" viewBox="0 0 50 60"><rect x="5" y="10" width="40" height="1.5" fill="#ddd"/><rect x="5" y="15" width="40" height="1.5" fill="#ddd"/><rect x="5" y="20" width="30" height="1.5" fill="#ddd"/></svg>
-                </div>
-                <div style="position:absolute;bottom:0;width:100%;text-align:center;font-size:10px;color:#aaa;background:rgba(0,0,0,0.5);padding:1px 0;font-family:'Segoe UI',sans-serif;">3</div>
-            </div>
-            <div class="pdf-thumb" id="pdf-thumb-4" onclick="pdfGoToPage(4)" style="border:2px solid transparent;cursor:pointer;border-radius:2px;overflow:hidden;position:relative;">
-                <div style="width:100%;aspect-ratio:210/297;background:#050508;display:flex;align-items:center;justify-content:center;">
-                    <span style="font-size:18px;opacity:0.2;color:#fff;">...</span>
-                </div>
-                <div style="position:absolute;bottom:0;width:100%;text-align:center;font-size:10px;color:#aaa;background:rgba(0,0,0,0.5);padding:1px 0;font-family:'Segoe UI',sans-serif;">4</div>
-            </div>
-        </div>
-
-        <div id="pdf-main-area" style="flex:1;overflow-y:auto;overflow-x:auto;background:#525252;display:flex;flex-direction:column;align-items:center;padding:30px 20px;gap:30px;">
-
-    <style>
-        #pdf-main-area .pdf-page-el {
-            display: block !important;
-            margin-bottom: 0 !important;
-        }
-        #pdf-pg-1 {
-            display: flex !important;
-        }
-    </style>
-
-    <div class="pdf-page-el" id="pdf-pg-1" style="width:595px;min-height:842px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.5);flex-shrink:0;overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;">
-        <div style="text-align:center;">
-            <h1 style="font-size:42px;font-weight:bold;letter-spacing:12px;margin-bottom:20px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;color:#2c2c2c;">雪球与我</h1>
-            <div style="font-size:13px;letter-spacing:6px;color:#888;margin-bottom:50px;font-family:'PingFang SC','Microsoft YaHei',sans-serif;">MY BUNNY STORY</div>
-            <div style="width:60px;height:2px;background:#d4a373;margin:0 auto 40px;"></div>
-            <p style="font-size:16px;color:#555;letter-spacing:4px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;margin-bottom:16px;">小雅 的观察日记</p>
-            <p style="font-size:12px;color:#aaa;letter-spacing:2px;font-family:'PingFang SC','Microsoft YaHei',sans-serif;">记录于温暖的春天</p>
-        </div>
-        <div style="position:absolute;bottom:35px;left:70px;right:70px;border-top:1px solid #eee;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#999;font-family:'PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:1px;">
-            <span>雪球与我 · 日常记录</span><span>1 / 4</span>
-        </div>
-    </div>
-
-    <div class="pdf-page-el" id="pdf-pg-2" style="width:595px;min-height:842px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.5);flex-shrink:0;overflow:hidden;position:relative;">
-        <div style="padding:65px 75px;position:relative;">
-            <div style="border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:35px;display:flex;justify-content:space-between;font-size:11px;color:#999;font-family:'PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:1px;">
-                <span>雪球与我 · 小雅</span><span>第一篇</span>
-            </div>
-
-            <h2 style="font-size:20px;font-weight:600;color:#2c2c2c;margin:0 0 28px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;border-left:3px solid #d4a373;padding-left:14px;letter-spacing:1px;">一、初次见面</h2>
-
-            <p style="font-size:15px;line-height:1.9;color:#333;text-indent:2em;margin-bottom:20px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;letter-spacing:0.5px;text-align:justify;">我有一只特别可爱的小兔子，它的名字叫“雪球”。因为它全身上下的绒毛都是雪白雪白的，一点杂色都没有，当它蜷缩在角落里睡觉的时候，真的就像是一个毛茸茸的小雪球。</p>
-
-            <p style="font-size:15px;line-height:1.9;color:#333;text-indent:2em;margin-bottom:20px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;letter-spacing:0.5px;text-align:justify;">还记得雪球刚来我们家的那一天，它非常害羞。它躲在笼子的最深处，两只短短小小的耳朵紧紧贴在头的两侧，小鼻子一抽一抽的，警惕地打量着四周。我轻轻地打开笼子门，把切好的一小块苹果放在它的面前，然后安静地退后几步看着它。</p>
-
-            <p style="font-size:15px;line-height:1.9;color:#333;text-indent:2em;margin-bottom:20px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;letter-spacing:0.5px;text-align:justify;">过了一会儿，它探出小脑袋，用手抓住了苹果，然后以极快的速度叼起苹果片，又缩回了角落里。听到它“咔嚓咔嚓”吃苹果的声音，我觉得我的心都要融化了。</p>
-
-            <div style="position:absolute;bottom:35px;left:70px;right:70px;border-top:1px solid #eee;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#999;font-family:'PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:1px;">
-                <span>雪球与我 · 小雅</span><span>2 / 4</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="pdf-page-el" id="pdf-pg-3" style="width:595px;min-height:842px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.5);flex-shrink:0;overflow:hidden;position:relative;">
-        <div style="padding:65px 75px;position:relative;">
-            <div style="border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:35px;display:flex;justify-content:space-between;font-size:11px;color:#999;font-family:'PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:1px;">
-                <span>雪球与我 · 小雅</span><span>第二篇</span>
-            </div>
-
-            <h2 style="font-size:20px;font-weight:600;color:#2c2c2c;margin:0 0 28px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;border-left:3px solid #d4a373;padding-left:14px;letter-spacing:1px;">二、一起长大的时光</h2>
-
-            <p style="font-size:15px;line-height:1.9;color:#333;text-indent:2em;margin-bottom:20px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;letter-spacing:0.5px;text-align:justify;">现在的雪球已经不怕我了。每天早上，只要我一睁开眼，就能看到它在笼子里跳来跳去。如果我赖床不起，它就会拍打笼子，好像在催我：“小雅，该起床啦！”</p>
-
-            <p style="font-size:15px;line-height:1.9;color:#333;text-indent:2em;margin-bottom:20px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;letter-spacing:0.5px;text-align:justify;">雪球最喜欢吃的是胡萝卜和新鲜的提摩西草，有时候我会准备一些小蛋糕给雪球吃。“沙沙”声是雪球最喜欢的声音，无论它在房间的哪个角落，都会飞快地跑过来。它会后腿站立，前爪搭在我桌上，仰起小脸看着我，那双鹅卵石一样清澈的眼睛里写满了期待。</p>
-
-            <p style="font-size:15px;line-height:1.9;color:#333;text-indent:2em;margin-bottom:20px;font-family:'Noto Serif SC','Songti SC','SimSun',serif;letter-spacing:0.5px;text-align:justify;">每天我带新兔兔回来的时候，它最安静。它总是乖乖地趴在笼子里，或者找一个能晒到太阳的地毯角落，把自己团成一个圆球，闭着眼睛打呼噜。我觉得每天都那么有趣。</p>
-
-            <div style="position:absolute;bottom:35px;left:70px;right:70px;border-top:1px solid #eee;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#999;font-family:'PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:1px;">
-                <span>雪球与我 · 小雅</span><span>3 / 4</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="pdf-page-el" id="pdf-pg-4" style="width:595px;min-height:842px;background:#050508;box-shadow:0 4px 20px rgba(0,0,0,0.5);flex-shrink:0;overflow:hidden;position:relative;">
-        <div style="padding:65px 75px 30px;text-align:center;user-select:none;">
-            <p style="font-size:16px;color:rgba(255,255,255,0.4);line-height:2.5;font-family:'Noto Serif SC','Songti SC',serif;letter-spacing:4px;margin-bottom:16px;">……</p>
-            <div style="border-top:1px dashed rgba(255,255,255,0.1);margin:24px 30px 12px;"></div>
-        </div>
-
-        <div style="position:relative; cursor: crosshair;">
-
-            <div style="padding:15px 75px; font-family:'Noto Serif SC','Songti SC','SimSun',serif; line-height:1.9; font-size:15px; letter-spacing:0.5px; text-align:justify; color: #1a1a24; filter: blur(5px); user-select: none; pointer-events: none;">
-                <p style="margin-bottom:20px;text-indent:2em;">其实，我知道雪球能听懂我说话。</p>
-            </div>
-
-            <div style="position:absolute; top:0; left:0; right:0; bottom:0; padding:15px 75px; font-family:'Noto Serif SC','Songti SC','SimSun',serif; line-height:1.9; font-size:15px; letter-spacing:0.5px; text-align:justify; color: #ffffff; text-shadow: 0 0 6px rgba(255,255,255,0.5); pointer-events: auto; user-select: none;
-                 -webkit-mask-image: radial-gradient(circle 85px at var(--x, -1000px) var(--y, -1000px), black 30%, transparent 100%);
-                 mask-image: radial-gradient(circle 85px at var(--x, -1000px) var(--y, -1000px), black 30%, transparent 100%);"
-                 onmousemove="let r = this.getBoundingClientRect(); this.style.setProperty('--x', (event.clientX - r.left) + 'px'); this.style.setProperty('--y', (event.clientY - r.top) + 'px');"
-                 onmouseleave="this.style.setProperty('--x', '-1000px'); this.style.setProperty('--y', '-1000px');">
-                <p style="margin-bottom:20px;text-indent:2em;">其实，我知道得雪球能听懂我说话。</p>
-            </div>
-        </div>
-
-        <div style="position:absolute;bottom:35px;left:70px;right:70px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.3);font-family:'PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:1px;user-select:none;">
-            <span>雪球与我 · 秘密基地</span><span>4 / 4</span>
-        </div>
-    </div>
-
-</div>
-    </div>
-
-    <div style="height:22px;background:#1f1f1f;border-top:1px solid #111;display:flex;align-items:center;padding:0 12px;flex-shrink:0;color:#888;font-size:11px;gap:20px;font-family:'Segoe UI',sans-serif;user-select:none;">
-        <span id="pdf-status-page">第 1 / 4 页</span>
-        <div style="width:1px;height:12px;background:#444;"></div>
-        <span id="pdf-status-zoom">100%</span>
-        <div style="width:1px;height:12px;background:#444;"></div>
-        <span>小白兔的故事.pdf</span>
-    </div>
-
-        </div>
-
         <div class="window" id="win-hospitalpdf" data-app="hospitalpdf" style="width:950px; height:680px; background:#323232; border-color:#111;">
         <div class="title-bar" style="background:#1f1f1f; border-bottom:1px solid #111;">
             <div class="title-text" style="color:#fff; display:flex; align-items:center; gap:8px;">
@@ -2383,7 +2362,6 @@
     <script src="js/pc/main.js"></script>
     <script src="js/pc/google.js"></script>
     <script src="js/pc/bilibili.js"></script>
-    <script src="js/pc/pdf.js"></script>
     <script src="js/pc/ending.js"></script>
     <script src="js/pc/ending-check.js"></script>
     <script src="js/pc/xhs.js"></script>

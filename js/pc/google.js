@@ -42,14 +42,14 @@
 
         {
             id: 'alphabet',
-            matched: ['字母表格', '字母表', 'alphabet', '密码', '加密'],
+            matched: ['字母表格', '字母表', 'alphabet', '密码', '加密', '维吉尼亚', '维吉尼亚密码', 'vigenere', 'vigenère'],
             results: [
                 {
-                    title: '字母表 (A-Z 数字编码对照表)',
-                    url: 'action:show-alphabet',
-                    displayUrl: 'alphabet.xyzz › 字母表',
-                    desc: '标准字母表数据 ©2020。提供英文字母 A-Z 对应的 0-25 完整映射关系。',
-                    favicon: 'alphabet'
+                    title: '维吉尼亚密码 - 维基百科，自由的百科全书',
+                    url: 'action:show-vigenere',
+                    displayUrl: 'zh.wikipedia.xyzz › wiki › 维吉尼亚密码',
+                    desc: '维吉尼亚密码（法语：Chiffre de Vigenère，英语：Vigenère cipher）是使用一系列凯撒密码组成密码字母表的加密算法，属于多表密码的一种简单形式。加密时需要一个关键词（密钥），依照密钥字母对明文逐位移位……',
+                    favicon: 'wiki'
                 },
                 {
                     title: '英文字母表 A-Z 完整发音与书写教学',
@@ -189,6 +189,7 @@
             baidu: `<svg width="14" height="14" viewBox="0 0 24 24"><rect width="24" height="24" rx="3" fill="#2932E1"/><text x="4" y="17" fill="white" font-size="12" font-weight="bold" font-family="arial">百</text></svg>`,
             bili:  `<svg width="14" height="14" viewBox="0 0 24 24"><rect width="24" height="24" rx="3" fill="#FB7299"/><text x="5" y="17" fill="white" font-size="13" font-weight="bold" font-family="arial">Z</text></svg>`,
             alphabet: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34A853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20L12 4l6 16M9 12h6"/></svg>`,
+            wiki: `<svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#c8ccd1" stroke-width="1"/><text x="12" y="16" fill="#54595d" font-size="13" font-weight="bold" font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">W</text></svg>`,
         };
         return map[type] || `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>`;
     }
@@ -280,6 +281,9 @@
         const jmyView    = document.getElementById('google-jiangmingyuan-view');
         if (jmyView)    jmyView.style.display = 'none';
 
+        const vgView     = document.getElementById('google-vigenere-view');
+        if (vgView)     vgView.style.display = 'none';
+
         if (hospView)   hospView.style.display = 'none';
         if (homeView)   homeView.style.display = 'flex';
         if (resultView) resultView.style.display = 'none';
@@ -313,6 +317,32 @@
         document.getElementById('google-result-view').style.display = 'none';
         document.getElementById('google-alphabet-view').style.display = 'flex';
         document.getElementById('google-address-text').innerText = 'alphabet.xyzz/a-z-mapping-table';
+
+        const backBtn = document.getElementById('google-back-btn');
+        if(backBtn) {
+            backBtn.style.opacity = '1';
+            backBtn.style.cursor = 'pointer';
+        }
+
+        const scrollArea = document.getElementById('google-scroll-area');
+        if (scrollArea) scrollArea.scrollTop = 0;
+    };
+
+    window.showGoogleVigenere = function() {
+        document.getElementById('google-home-view').style.display = 'none';
+        document.getElementById('google-result-view').style.display = 'none';
+
+        const alphabetView = document.getElementById('google-alphabet-view');
+        if (alphabetView) alphabetView.style.display = 'none';
+        const jjView = document.getElementById('google-jiangjianguo-view');
+        if (jjView) jjView.style.display = 'none';
+        const hospView = document.getElementById('google-hospital-view');
+        if (hospView) hospView.style.display = 'none';
+        const jmyView = document.getElementById('google-jiangmingyuan-view');
+        if (jmyView) jmyView.style.display = 'none';
+
+        document.getElementById('google-vigenere-view').style.display = 'block';
+        document.getElementById('google-address-text').innerText = 'zh.wikipedia.xyzz/wiki/维吉尼亚密码';
 
         const backBtn = document.getElementById('google-back-btn');
         if(backBtn) {
@@ -774,6 +804,8 @@ function endJmyGlitchEffect() {
         if (jmyView) jmyView.style.display = 'none';
         if (homeView)   homeView.style.display = 'none';
         if (alphabetView) alphabetView.style.display = 'none';
+        const vgView = document.getElementById('google-vigenere-view');
+        if (vgView) vgView.style.display = 'none';
         const jjView = document.getElementById('google-jiangjianguo-view');
         if (jjView) jjView.style.display = 'none';
         if (resultView) resultView.style.display = 'block';
@@ -862,6 +894,24 @@ function endJmyGlitchEffect() {
             alphabetGrid.innerHTML = gridHtml;
         }
 
+        const vgSquare = document.getElementById('google-vigenere-square');
+        if (vgSquare && vgSquare.innerHTML.trim() === '') {
+            let t = '<table class="vg-square-table"><thead><tr><th class="vg-corner">+</th>';
+            for (let j = 0; j < 26; j++) t += `<th>${String.fromCharCode(65 + j)}</th>`;
+            t += '</tr></thead><tbody>';
+            for (let i = 0; i < 26; i++) {
+                t += `<tr><th class="vg-rowhead">${String.fromCharCode(65 + i)}</th>`;
+                for (let j = 0; j < 26; j++) {
+                    const c = String.fromCharCode(65 + ((i + j) % 26));
+                    const diag = (i === j) ? ' class="vg-diag"' : '';
+                    t += `<td${diag}>${c}</td>`;
+                }
+                t += '</tr>';
+            }
+            t += '</tbody></table>';
+            vgSquare.innerHTML = t;
+        }
+
         if (resultList) {
             resultList.onclick = (e) => {
                 const link = e.target.closest('.google-result-link');
@@ -870,6 +920,8 @@ function endJmyGlitchEffect() {
                     const action = link.getAttribute('data-action');
                     if (action === 'action:show-alphabet') {
                         showGoogleAlphabet();
+                    } else if (action === 'action:show-vigenere') {
+                        showGoogleVigenere();
                     } else if (action === 'action:show-jiangjianguo') {
                         showGoogleJiangjianguo();
                     } else if (action === 'action:show-hospital') {
@@ -885,6 +937,9 @@ function endJmyGlitchEffect() {
                 if (backBtn.style.cursor === 'pointer') {
                     const alphabetView = document.getElementById('google-alphabet-view');
                     if (alphabetView) alphabetView.style.display = 'none';
+
+                    const vgView = document.getElementById('google-vigenere-view');
+                    if (vgView) vgView.style.display = 'none';
 
                     const jjView = document.getElementById('google-jiangjianguo-view');
                     if (jjView) jjView.style.display = 'none';

@@ -127,7 +127,7 @@ function startEnding3Effect() {
     }, 3800);
 }
 
-function showEndingScreen(type = 1) {
+function showEndingScreen(type = 1, skipIntro = false) {
     if (document.getElementById('ending-screen')) return;
 
     document.body.style.background = '#000';
@@ -213,6 +213,53 @@ function showEndingScreen(type = 1) {
     endingDiv.appendChild(restartWrap);
     document.body.appendChild(endingDiv);
 
+    function revealRestart() {
+        scrollWrap.style.display = 'none';
+        restartWrap.style.opacity = '1';
+        restartWrap.style.pointerEvents = 'all';
+
+        if (type == 1) {
+            customImg1.style.opacity = '1';
+            setTimeout(() => {
+                customImg2.style.opacity = '1';
+                customImg1.style.opacity = '0';
+            }, 4500);
+        } else if (type == 2) {
+            customImg1.style.opacity = '1';
+        } else if (type == 3) {
+            customImg1.style.opacity = '1';
+        }
+
+        const btn = document.getElementById('ending-restart-btn');
+        if (btn) {
+            btn.onmouseenter = () => {
+                btn.style.color = '#fff'; btn.style.borderColor = '#aaa';
+                btn.style.boxShadow = '0 0 15px rgba(255,255,255,0.1)';
+            };
+            btn.onmouseleave = () => {
+                btn.style.color = '#888'; btn.style.borderColor = '#444';
+                btn.style.boxShadow = 'none';
+            };
+            btn.onclick = () => {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 1s ease';
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.replace('index.html');
+                }, 1000);
+            };
+        }
+    }
+
+    // 重新进入已通关的存档时(比如玩到 true ending 后直接关掉页面,再点链接进来),
+    // 不再重播整段字幕,直接跳到结局最终画面并立刻给出"重新开始"按钮,避免卡住。
+    if (skipIntro) {
+        titleEl.style.transition = 'none';
+        titleEl.style.opacity = '1';
+        revealRestart();
+        return;
+    }
+
     setTimeout(() => { titleEl.style.opacity = '1'; }, 500);
 
     setTimeout(() => {
@@ -220,49 +267,13 @@ function showEndingScreen(type = 1) {
         const fullText = buildEndingMessage(type);
 
         typewriterEffect(msgEl, fullText, 55, () => {
-            
+
             setTimeout(() => {
                 scrollWrap.style.transition = 'opacity 2.5s ease-in-out';
                 scrollWrap.style.opacity = '0';
-                
-                setTimeout(() => {
-                    scrollWrap.style.display = 'none';
-                    restartWrap.style.opacity = '1';
-                    restartWrap.style.pointerEvents = 'all';
-                    
-                    if (type == 1) {
-                        customImg1.style.opacity = '1';
-                        setTimeout(() => {
-                            customImg2.style.opacity = '1';
-                            customImg1.style.opacity = '0';
-                        }, 4500);
-                    } else if (type == 2) {
-                        customImg1.style.opacity = '1';
-                    } else if (type == 3) {
-                        customImg1.style.opacity = '1';
-                    }
 
-                    const btn = document.getElementById('ending-restart-btn');
-                    if (btn) {
-                        btn.onmouseenter = () => {
-                            btn.style.color = '#fff'; btn.style.borderColor = '#aaa';
-                            btn.style.boxShadow = '0 0 15px rgba(255,255,255,0.1)';
-                        };
-                        btn.onmouseleave = () => {
-                            btn.style.color = '#888'; btn.style.borderColor = '#444';
-                            btn.style.boxShadow = 'none';
-                        };
-                        btn.onclick = () => {
-                            document.body.style.opacity = '0';
-                            document.body.style.transition = 'opacity 1s ease';
-                            setTimeout(() => {
-                                localStorage.clear();
-                                window.location.replace('index.html');
-                            }, 1000);
-                        };
-                    }
-                }, 2500);
-            }, 6000); 
+                setTimeout(() => { revealRestart(); }, 2500);
+            }, 6000);
         });
         scrollMsgUp(msgEl, scrollWrap);
     }, 3500);

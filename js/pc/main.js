@@ -93,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
         'search': { icon: 'image/drive.png', name: '本地磁盘 (C:)' },
         'bilibili': { icon: 'image/zilizili.png', name: '小辰 - ZiliZili' },
         'google': { icon: 'image/google.webp', name: 'chrome' },
-        'pdfviewer': { icon: 'image/pdf.png', name: '20200615.pdf' },
         'xhs': { icon: 'image/小红书.png', name: '小红书' },
         'hospitalpdf': { icon: 'image/pdf.png', name: '江建国体检报告.pdf' },
         'news': { icon: 'image/新闻.webp', name: '每日新闻' },
@@ -129,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
             'icon-cmd': [2, 0],
             'icon-search': [1, 2],
             'icon-google': [1, 3],
-            'icon-pdfviewer': [1, 4],
             'icon-hospitalpdf': [2, 4],
             'icon-videoplayer': [2, 1]
         },
@@ -153,7 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
             'icon-wechat': [0, 4],
             'icon-xhs': [0, 5],
             'icon-videoplayer': [1, 0],
-            'icon-pdfviewer': [1, 1],
             'icon-cmd': [1, 2]
         }
     };
@@ -1028,12 +1025,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const zhoumu3VFS = {
         docs: [
-            { id: 'z3txt', name: '文字.txt', content: '我叫若宁。从小到大，我都和姥姥住在一起。她总爱牵着我的手去街上，说是让我看看外面，也总是给我买各种好吃的。那时候的日子，是那么无忧无虑。但最近……不知道怎么了，脑海里总是浮现出一些陌生人的脸。总是那么模糊，却又如此真实。我尝试着去触摸他们，但我摸不到……', type: 'text' },
-            { id: 'd99', name: '文字2.txt', content: '安沫周四来我姥姥家玩了，我很开心……是她爸爸送她来的……我们一起去外面打了羽毛球，看了电视，还吃了饺子。饺子真好吃……晚上安沫就被她爸爸接回家了。', type: 'text' },
-            { id: 'd98', name: '文字3.txt', content: '……', type: 'text' },
-            { id: 'd97', name: '文字4.txt', content: '……', type: 'text' },
-            { id: 'd96', name: '文字5.txt', content: '……', type: 'text' },
-            { id: 'd95', name: '文字6.txt', content: 'A -> S, O -> P, Q -> W, M -> Z, V -> B', type: 'text' },
+            { id: 'z3d1', name: '日记1.png', content: 'image/日记1.webp', type: 'img' },
+            { id: 'z3d2', name: '日记2.png', content: 'image/日记二.webp', type: 'img' },
+            { id: 'z3d3', name: '日记3.png', content: 'image/日记三.webp', type: 'img' },
+            { id: 'z3d4', name: '日记4.png', content: 'image/日记四.webp', type: 'img' },
+            { id: 'z3txt', name: '文字.txt', content: 'A -> S, O -> P, Q -> W, M -> Z, V -> B', type: 'text' },
         ],
         pics: [
             { id: 'p1', name: '海滩.png', content: 'image/全家图2.webp', type: 'img' },
@@ -1281,9 +1277,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (cmdWinTitle) cmdWinTitle.innerText = '管理员: 兔先生.exe';
             const cmdHeader = document.getElementById('cmd-header');
             if (cmdHeader) cmdHeader.innerText = '兔先生 [版本 0.0.19045.2965]';
-
-            const pdfIcon = document.getElementById('icon-pdfviewer');
-            if (pdfIcon) pdfIcon.style.display = 'flex';
 
             if (isDocsUnlockedZ3) {
                 if (docsIconImg) docsIconImg.src = 'image/folder.png';
@@ -1659,8 +1652,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const pwdError = document.getElementById('pwd-error');
 
     function checkPassword() {
+        pwdError.innerText = '密码不正确，请重试。';
         if (currentUnlockTarget === 'secret') {
             if (pwdInput.value === '052012') {
+                pwdError.innerText = '密码已被篡改';
                 pwdError.style.display = 'block';
                 pwdInput.focus();
                 if (!isZhoumu2 && !isZhoumu3 && localStorage.getItem('win10_event_anmo_fake_pwd') !== 'true') {
@@ -2968,11 +2963,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             return;
 
                             } else if (lowerVal === 'help') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4;">兔先生.exe 已接管系统。<br>当前可用指令:<br> - help : 查看系统帮助<br> - clear : 清屏<br> - wakeup : 清醒<br> - whoami : 我是谁<br></div>`;
+                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.4;">兔先生.exe 已接管系统。<br>当前可用指令:<br> - help<br> - clear<br> - wakeup<br></div>`;
                             } else if (lowerVal === 'clear') {
                                 cmdOutput.innerHTML = '';
-                            } else if (lowerVal === 'whoami') {
-                                cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">正在确认当前用户<br>用户：若宁<br>上次登录：2020-06-16 03:17<br>当前在线：2</div>`;
                             } else if (lowerVal === 'wakeup' || lowerVal === '醒醒') {
                                 localStorage.setItem('win10_z3_wakeup_heard', 'true');
                                 cmdOutput.innerHTML += `<div style="margin-bottom: 10px; line-height: 1.6;">jiangmingyuan</div>`;
@@ -3321,8 +3314,6 @@ document.addEventListener("DOMContentLoaded", () => {
             playPromise.catch(() => showZ3VideoFallback());
         }
 
-        // 看门狗:若视频在若干秒内仍无法真正开始播放(国内网络加载很慢/被墙),
-        // 回退到 tuzi 互动动画,避免玩家卡在缓冲画面。'playing' 事件会清掉这个定时器。
         clearTimeout(z3VideoFallbackTimer);
         z3VideoFallbackTimer = setTimeout(() => {
             if (isVideoPlayerVisible() && video.currentTime === 0) {
