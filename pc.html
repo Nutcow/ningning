@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>桌面</title>
+    <script>
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+    </script>
     <link rel="stylesheet" href="pc.css">
 </head>
 <body>
@@ -1483,7 +1486,7 @@
                     <div style="height: 120px; background-color: #002b5e; background-image: linear-gradient(to right, rgba(0, 43, 94, 0.95) 0%, rgba(0, 43, 94, 0.75) 40%, rgba(0, 77, 153, 0.3) 100%), url('image/学校背景.webp'); background-size: cover; background-position: center; position: relative; display: flex; align-items: center; padding: 0 40px; border-bottom: 2px solid #c00;">
                         <div style="display: flex; align-items: center; gap: 20px; z-index: 2;">
                             <div style="width: 86px; height: 86px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 2px 6px rgba(0,0,0,0.4); overflow: hidden; flex-shrink: 0;">
-                                <img loading="lazy" src="image/校徽.png" alt="明安区第七中学校徽" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+                                <img loading="lazy" src="image/校徽.webp" alt="明安区第七中学校徽" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
                             </div>
 
                             <div style="color: #fff;">
@@ -1724,7 +1727,7 @@
                             <div style="display: flex; align-items: center; justify-content: center; gap: 30px; width: 100%;">
 
                                 <div style="width: 60px; height: 60px; flex-shrink: 0; opacity: 0.9; border-radius: 50%; overflow: hidden; background: #fff; padding: 2px;">
-                                    <img loading="lazy" src="image/校徽.png" alt="明安区第七中学校徽" style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%;" />
+                                    <img loading="lazy" src="image/校徽.webp" alt="明安区第七中学校徽" style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%;" />
                                 </div>
 
                                 <div style="line-height: 2; text-align: left; font-family: SimSun;">
@@ -1838,7 +1841,7 @@
                         <div id="hospital-auth-view" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: absolute; z-index: 10; background: #eef2f5;">
                             <div style="background: #fff; padding: 40px; border-top: 4px solid #004b97; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 380px;">
                                 <div style="width: 60px; height: 60px; margin: 0 auto 15px;">
-                                    <img loading="lazy" src="image/医院.png" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.style.display='none'">
+                                    <img loading="lazy" src="image/医院.webp" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.style.display='none'">
                                 </div>
                                 <div style="font-size: 18px; color: #004b97; font-weight: bold; margin-bottom: 8px; font-family: 'Microsoft YaHei', sans-serif;">明安市第一人民医院</div>
                                 <div style="font-size: 12px; color: #666; margin-bottom: 25px;">请输入用户名查询</div>
@@ -1858,7 +1861,7 @@
 
                             <div style="width: 900px; padding: 25px 0; display:flex; align-items:center; gap: 20px; z-index: 2; border-bottom: 3px solid #cc0000;">
                                 <div style="width: 70px; height: 70px; background: #fff; border-radius: 50%; padding: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-                                    <img loading="lazy" src="image/校徽.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'">
+                                    <img loading="lazy" src="image/校徽.webp" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'">
                                 </div>
                                 <div>
                                     <div style="font-size: 28px; color: #fff; font-weight: bold; letter-spacing: 4px; text-shadow: 1px 2px 4px rgba(0,0,0,0.4);">明安市第一人民医院</div>
@@ -2123,7 +2126,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #000; padding-bottom: 12px; margin-bottom: 2px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div style="width: 40px; height: 40px; border-radius: 50%;  display: flex; justify-content: center; align-items: center;">
-                                <img loading="lazy" src="image/医院.png" alt="医院图标" style="width: 60px; height: 60px; object-fit: contain;">
+                                <img loading="lazy" src="image/医院.webp" alt="医院图标" style="width: 60px; height: 60px; object-fit: contain;">
                             </div>
                             <div>
                                 <div style="font-size: 22px; font-family: 'Microsoft YaHei', '黑体', sans-serif; font-weight: bold; letter-spacing: 2px;">明安市第一人民医院</div>

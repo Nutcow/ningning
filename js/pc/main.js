@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         {
-            id: 'm9', authorName: '哥哥', authorAvatar: 'image/gege.jpg',
+            id: 'm9', authorName: '哥哥', authorAvatar: 'image/gege.webp',
             text: '用了三年的电脑，该退役啦。',
             time: '2020年6月1号 晚上10:45', likes: ['宁宁', '月月'],
             comments: [
@@ -312,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
             time: '2020年5月25号 晚上10:21', likes: ['宁宁', '月月', '安沫'],
         },
         {
-            id: 'm7', authorName: '哥哥', authorAvatar: 'image/gege.jpg',
+            id: 'm7', authorName: '哥哥', authorAvatar: 'image/gege.webp',
             text: '还剩一年就步入大学了，时间过得好快啊',
             time: '2020年5月25号 晚上7:08', likes: ['宁宁'],
             comments: [
@@ -494,7 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'brother': {
-            name: '哥哥', avatar: 'image/gege.jpg',
+            name: '哥哥', avatar: 'image/gege.webp',
             messages: [
                 { time: '2020年5月18日 18:02', text: '宁宁你今晚要吃什么', isMine: false },
                 { time: '2020年5月18日 18:03', text: '我不饿', isMine: true },
@@ -1074,9 +1074,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function saveVFS() { localStorage.setItem('win10_vfs', JSON.stringify(vfs)); }
     const searchableItems = [
         { id: 'sch0', name: '成绩单.png', content: 'image/成绩单.webp', type: 'img' },
-        { id: 'sch1', name: '哥哥.db', content: 'Error: database disk image is malformed', type: 'text', icon: 'image/db.png'},
+        { id: 'sch1', name: '哥哥.db', content: 'Error: database disk image is malformed', type: 'text', icon: 'image/db.webp'},
         { id: 'sch2', name: '2018毕业照.png', content: 'image/毕业照.webp', type: 'img' },
-        { id: 'sch3', name: '未命名.bat', content: '[已被篡改]', type: 'text',icon: 'image/db.png'},
+        { id: 'sch3', name: '未命名.bat', content: '[已被篡改]', type: 'text',icon: 'image/db.webp'},
         { id: 'sch4', name: 'key.txt', content: 'RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT,RABBIT', type: 'text',icon: 'image/file.png'},
     ];
 
@@ -1884,7 +1884,7 @@ document.addEventListener("DOMContentLoaded", () => {
         'bcmh': {
             id: 'bcmh',
             name: '明安教育',
-            avatar: 'image/校徽.png',
+            avatar: 'image/校徽.webp',
             region: '明安',
             sign: '明安教育官方公众号 - mingan.edu.xyzz',
             messages: [

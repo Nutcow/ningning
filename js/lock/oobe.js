@@ -6,38 +6,79 @@ document.addEventListener("DOMContentLoaded", () => {
     const isZ2 = localStorage.getItem('win10_zhoumu2') === 'true';
     const isZ3 = localStorage.getItem('win10_zhoumu3') === 'true';
     const isFirstBootDone = localStorage.getItem('win10_first_boot_done') === 'true';
-    const assetsToLoad = window.LOCK_ASSETS_TO_LOAD || [];
+    const tier1 = window.LOCK_ASSETS_TIER1 || window.LOCK_ASSETS_TO_LOAD || [];
+    const tier2 = window.LOCK_ASSETS_TIER2 || [];
 
-    function preloadAsset(src) {
-        if (!src) return;
+    // 加载单个资源；done 保证只回调一次(成功/失败/8秒超时)
+    function loadOne(src, done) {
+        let settled = false;
+        const finish = () => { if (settled) return; settled = true; done(); };
         if (src.endsWith('.wav') || src.endsWith('.mp3')) {
             const audio = new Audio();
             audio.preload = 'auto';
+            audio.oncanplaythrough = finish;
+            audio.oncanplay = finish;
+            audio.onloadeddata = finish;
+            audio.onerror = finish;
             audio.src = src;
-            try { audio.load(); } catch (e) {}
+            try { audio.load(); } catch (e) { finish(); }
         } else {
             const img = new Image();
+            img.onload = finish;
+            img.onerror = finish;
             img.src = src;
         }
+        setTimeout(finish, 8000);
     }
 
-    function preloadAssetsInBackground() {
-        assetsToLoad.forEach(src => preloadAsset(src));
+    // 按数组顺序、限制并发地加载 — 保证剧情靠前的资源先到
+    function loadQueue(list, concurrency, onEach) {
+        let next = 0;
+        function pump() {
+            if (next >= list.length) return;
+            const src = list[next++];
+            loadOne(src, () => {
+                if (onEach) onEach(src);
+                pump();
+            });
+        }
+        for (let i = 0; i < Math.min(concurrency, list.length); i++) pump();
     }
 
+    let tier2Started = false;
+    function startTier2() {
+        if (tier2Started) return;
+        tier2Started = true;
+        loadQueue(tier2, 4);
+    }
+
+    // 等 Service Worker 接管页面再开始预载,让首次下载的资源直接进 SW 缓存;
+    // 2 秒兜底,SW 不可用(或安装慢)时照常加载
+    function whenSwReady(cb) {
+        let called = false;
+        const go = () => { if (called) return; called = true; cb(); };
+        if (!('serviceWorker' in navigator)) return go();
+        if (navigator.serviceWorker.controller) return go();
+        navigator.serviceWorker.addEventListener('controllerchange', go);
+        setTimeout(go, 2000);
+    }
+
+    // 非首次进入：不设门槛，静默按序预载全部
     if (isZ2 || isZ3 || isFirstBootDone) {
         if (oobeScreen) oobeScreen.style.display = 'none';
         if (bootScreen) bootScreen.style.display = 'none';
-        preloadAssetsInBackground();
+        whenSwReady(() => {
+            loadQueue(tier1, 6, null);
+            startTier2();
+        });
         return;
     }
     if (oobeScreen) oobeScreen.style.display = 'flex';
 
-    const totalAssets = assetsToLoad.length;
-
+    // 首次进入：只等第一档(~630KB)，下完立即放行；第二档转后台
+    const totalAssets = tier1.length;
     let loadedCount = 0;
     let isPreloadDone = false;
-    const countedAssets = new Set();
 
     if (acceptBtn) {
         acceptBtn.disabled = true;
@@ -55,51 +96,23 @@ document.addEventListener("DOMContentLoaded", () => {
             acceptBtn.style.cursor = 'pointer';
             acceptBtn.innerText = '接 受';
         }
-    }
-
-    function updatePreloadProgress(key) {
-        if (countedAssets.has(key)) return;
-        countedAssets.add(key);
-
-        loadedCount++;
-        const percent = totalAssets ? Math.min(100, Math.floor((loadedCount / totalAssets) * 100)) : 100;
-
-        if (acceptBtn && !isPreloadDone) {
-            acceptBtn.innerText = `正在下载游戏资源 (${percent}%)`;
-        }
-
-        if (loadedCount >= totalAssets) {
-            finishPreload();
-        }
+        startTier2();
     }
 
     if (!totalAssets) {
         finishPreload();
+    } else {
+        whenSwReady(() => {
+            loadQueue(tier1, 6, () => {
+                loadedCount++;
+                const percent = Math.min(100, Math.floor((loadedCount / totalAssets) * 100));
+                if (acceptBtn && !isPreloadDone) {
+                    acceptBtn.innerText = `正在下载游戏资源 (${percent}%)`;
+                }
+                if (loadedCount >= totalAssets) finishPreload();
+            });
+        });
     }
-
-    assetsToLoad.forEach((src, i) => {
-        const key = i + '|' + src;
-        let settled = false;
-        const done = () => { if (settled) return; settled = true; updatePreloadProgress(key); };
-
-        if (src.endsWith('.wav') || src.endsWith('.mp3')) {
-            const audio = new Audio();
-            audio.preload = 'auto';
-            audio.oncanplaythrough = done;
-            audio.oncanplay = done;
-            audio.onloadeddata = done;
-            audio.onerror = done;
-            audio.src = src;
-            try { audio.load(); } catch (e) {}
-        } else {
-            const img = new Image();
-            img.onload = done;
-            img.onerror = done;
-            img.src = src;
-        }
-
-        setTimeout(done, 8000);
-    });
 
     setTimeout(finishPreload, 12000);
 

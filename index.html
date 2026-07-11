@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>登入</title>
+    <script>
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+    </script>
     <link rel="stylesheet" href="style.css">
     <script>
         // 尽早根据周目在 <html> 上打主题类,让壁纸首帧就正确,避免刷新时闪出上一周目/默认壁纸

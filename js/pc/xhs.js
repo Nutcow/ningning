@@ -18,7 +18,7 @@
     const POSTS = [
         { id:1, title:'没啥大本事，25岁装修100㎡小家普通却温馨', body:'关于我家：\n坐标辽宁，普通高层楼房，南北通透\n建面116平，套内93平，三室两厅一厨一卫\n房子虽然不大，但100平的小家足够两人生活，25岁时拥有装修了这个小家，如今已经住进新家第二年了。\n温馨自由舒服，无论多晚回家，都有一盏灯在为自己点亮，就足够啦\n\n装修感受：\n自己设计的家，没有找装修公司\n风格：简约, ins', imgs:['xhs/xhs7.webp','xhs/xhs8.webp'], author:'惠宝儿', avatar: 'xhs/xhs2.webp', likes:18000, cat:'装修', tags:['装修日记','小户型装修','家居美学'], date:'2020-05-25', h:240 },
         { id:2, title:'短发扎着还是披着，怎么好看怎么来！', body:'短发妹妹的日常造型分享，随手一扎就很清爽，不同场合不同风格，总有一款适合你。日常上班首选低马尾，约会首选半扎发！', imgs:['xhs/xhs15_png.webp'], author:'无敌桃桃', avatar:'桃', likes:3627, cat:'时尚', tags:['短发','日常造型'], date:'2020-05-26', h:300 },
-        { id:3, title:'我婆婆迫不及待再来中国', body:'带婆婆走遍了北京的大街小巷，胡同、故宫、颐和园……外国人眼中的中国，比我们想象的更美丽。婆婆已经迫不及待要第二次来了！', imgs:['xhs/xhs17.jpg'], author:'张霖铃', avatar:'张', likes:27000, cat:'旅行', tags:['中国旅游','北京'], date:'2020-05-28', h:260 },
+        { id:3, title:'我婆婆迫不及待再来中国', body:'带婆婆走遍了北京的大街小巷，胡同、故宫、颐和园……外国人眼中的中国，比我们想象的更美丽。婆婆已经迫不及待要第二次来了！', imgs:['xhs/xhs17.webp'], author:'张霖铃', avatar:'张', likes:27000, cat:'旅行', tags:['中国旅游','北京'], date:'2020-05-28', h:260 },
         { id:4, title:'倪妮减肥法5天狂掉13斤 三伏天王炸食谱！', body:'三伏天减脂期间的饮食记录，低卡高蛋白，不节食不饿肚子！跟着名人食谱走，科学减肥不反弹。附详细食谱和热量表。\n\n早餐：燕麦+鸡蛋+蔬菜\n午餐：鸡胸肉+糙米\n晚餐：轻食沙拉', imgs:['xhs/xhs19_png.webp'], author:'五十妞爱养生', avatar:'xhs/xhs37.webp', likes:21000, cat:'美食', tags:['减肥','健康饮食','食谱'], date:'2020-06-2', h:320 },
         { id:5, title:'全村都知道我带爷爷去北京旅游了', body:'带爷爷来北京第一次坐高铁，爷爷开心得像个孩子！在北京南站拍了好多照片，爷爷说这辈子没见过这么大的站，一定要再来一次。', imgs:['xhs/xhs16_png.webp'], author:'唐安妮', avatar:'xhs/xhs24.webp', likes:22000, cat:'旅行', tags:['亲情','旅行','北京'], date:'2020-06-02', h:270 },
         { id:6, title:'从校服到婚纱八年，愿意等我长大', body:'从高中同学到人生伴侣，8年的时光见证了我们的成长。当年的校服少年，如今穿上了婚纱和礼服，感谢你一直等我长大。', imgs:['xhs/xhs14_png.webp'], author:'kk', avatar:'xhs/xhs14_jpg.webp', likes:20000, cat:'生活', tags:['婚纱','爱情故事'], date:'2020-05-28', h:280 },
@@ -30,7 +30,7 @@
         1: [
             { id:101, user:'爱吃西柚', text:'真的九十三嘛为啥看起来这么大', avatar:'xhs/xhs.webp', date:'2020-05-30', likes:12 },
             { id:102, user:'惠宝儿', text:'套内93', date:'2020-05-29', likes:5, isAuthor:true, avatar:'xhs/xhs2.webp' },
-            { id:103, user:'橘子汽水', text:'完全看不出来才93，布局太显大了', date:'2020-05-31', likes:8, avatar:'xhs/xhs3.jpg' },
+            { id:103, user:'橘子汽水', text:'完全看不出来才93，布局太显大了', date:'2020-05-31', likes:8, avatar:'xhs/xhs3.webp' },
             { id:104, user:'今天也要开心', text:'客厅真的宽敞', date:'2020-05-28', likes:3, avatar:'xhs/xhs4.webp' },
             { id:105, user:'小熊软糖', text:'我家120都没这个视觉效果', date:'2020-06-01', likes:18 },
             { id:106, user:'慢慢来', text:'采光也很好，看着更大', date:'2020-05-27', likes:6, avatar:'xhs/xhs5.webp' },
@@ -50,7 +50,7 @@
             { id:901, user:'张志豪', text:'欢迎婆婆再来中国玩！', avatar:'xhs/xhs30.webp', date:'2020-06-02', likes:116 },
             { id:904, user:'阿豪', text:'中国好玩的地方太多了，北京只是开始', date:'2020-06-03', likes:95 },
             { id:905, user:'Wendy0918', text:'外国长辈喜欢中国美食吗？', date:'2020-06-04', likes:41 },
-            { id:906, user:'周同学', text:'颐和园真的很适合带老人慢慢逛', avatar:'xhs/xhs31.jpg', date:'2020-06-04', likes:58 },
+            { id:906, user:'周同学', text:'颐和园真的很适合带老人慢慢逛', avatar:'xhs/xhs31.webp', date:'2020-06-04', likes:58 },
             { id:907, user:'Eric', text:'下次可以带婆婆去西安看看', avatar:'xhs/xhs32.webp', date:'2020-06-05', likes:63 },
         ],
         4: [
@@ -60,7 +60,7 @@
             { id:404, user:'减肥成功版', text:'先收藏，等三伏天开始跟', avatar:'xhs/xhs12.webp', date:'2020-06-03', likes:12 },
         ],
         5: [
-            { id:801, user:'陈同学', text:'爷爷笑得好开心，看着好治愈', avatar:'xhs/xhs25.jpg', date:'2020-06-02', likes:128 },
+            { id:801, user:'陈同学', text:'爷爷笑得好开心，看着好治愈', avatar:'xhs/xhs25.webp', date:'2020-06-02', likes:128 },
             { id:802, user:'安安', text:'一定要多带老人家出去看看世界', avatar:'xhs/xhs26.webp', date:'2020-06-02', likes:96 },
             { id:804, user:'Kevin', text:'看到爷爷开心我也跟着开心了', avatar:'xhs/xhs27.webp',date:'2020-06-03', likes:88 },
             { id:806, user:'小泽', text:'爷爷有你这样的孙女真幸福', avatar:'xhs/xhs28.webp', date:'2020-06-04', likes:142 },
