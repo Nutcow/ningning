@@ -338,12 +338,12 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         {
             id: 'm2', authorName: '妈妈', authorAvatar: 'image/mama.webp',
-            text: '时间过得真快，一转眼小家伙们都长大了！',
+            text: '时间过得真快，一转眼小家伙都长大了！',
             time: '2020年6月1号 晚上8:09', likes: ['宁宁','爸爸']
         },
         {
             id: 'm3', authorName: '月月', authorAvatar: 'image/yueyue.webp',
-            text: '再上十年学我才23岁...好痛苦还有那么多要学',
+            text: '再上十年学我才22岁...好痛苦还有那么多要学',
             time: '2020年6月1号 早上11:07', likes: ['宁宁'],
         },
         {
