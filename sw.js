@@ -1,6 +1,6 @@
 // Service Worker: 让二刷/周目切换/弱网时资源直接走本地缓存
 // 注意: 若同名替换了图片/音频/视频内容, 把下面版本号 +1, 玩家端才会重新下载
-const CACHE_VERSION = 'ningning-v1';
+const CACHE_VERSION = 'ningning-v2';
 
 self.addEventListener('install', () => {
     self.skipWaiting();
