@@ -488,7 +488,7 @@
                 nameEl.innerText = '江明远';
                 nameEl.style.color = '#333';
             }
-            if (bioEl) bioEl.innerHTML = '热爱计算机与数字媒体<br>明安二中2021届毕业生';
+            if (bioEl) bioEl.innerHTML = '热爱计算机与数字媒体<br>明安二中2018届毕业生';
 
             if (popularList) popularList.style.display = 'flex';
             if (popularEmpty) popularEmpty.style.display = 'none';
