@@ -55,7 +55,7 @@
             title: '明安区第二中学举行2020届毕业典礼',
             source: '明安教育社',
             comments: 47,
-            time: '2020年4月3日',
+            time: '2020年6月15日',
             hasImage: true,
             imgSrc: 'image/xw7.webp',
             tag: '校园',
